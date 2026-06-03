@@ -1,61 +1,69 @@
 # BUP — Build Up Play
-## Panduan Instalasi & Penggunaan
+## Aplikasi Manajemen Laundry Sepatu
 
 ---
 
 ## 📁 Struktur Folder
 
 ```
-bup/
-├── index.php                  ← Halaman utama (landing page)
-├── .htaccess                  ← Konfigurasi Apache
+bupp/
+├── index.php                      ← Halaman utama (landing page)
+├── .htaccess                      ← Konfigurasi Apache
 │
 ├── config/
-│   ├── app.php                ← Konfigurasi umum & konstanta
-│   └── database.php           ← Koneksi database (PDO)
+│   ├── app.php                    ← Konfigurasi umum & konstanta
+│   ├── database.php               ← Koneksi database PDO (buat dari database.example.php)
+│   └── database.example.php       ← Template konfigurasi database
 │
 ├── includes/
-│   ├── auth.php               ← Autentikasi admin (login/logout)
-│   └── helpers.php            ← Fungsi pembantu (rupiah, upload, dll)
+│   ├── auth.php                   ← Autentikasi admin (login/logout)
+│   └── helpers.php                ← Fungsi pembantu (rupiah, upload, dll)
 │
 ├── pages/
-│   ├── order.php              ← Form pemesanan
-│   ├── status.php             ← Cek status pesanan
-│   ├── daftar-harga.php       ← Daftar harga layanan
+│   ├── order.php                  ← Form pemesanan (multi-item, peta, ongkir dinamis)
+│   ├── status.php                 ← Cek status pesanan
 │   ├── partials/
-│   │   └── navbar.php         ← Komponen navbar (reusable)
+│   │   └── navbar.php             ← Komponen navbar (reusable)
 │   └── admin/
-│       ├── login.php          ← Login admin
-│       ├── dashboard.php      ← Dashboard utama
-│       ├── orders.php         ← Manajemen pesanan
-│       ├── services.php       ← Manajemen layanan
-│       ├── customers.php      ← Data pelanggan
-│       ├── gallery.php        ← Manajemen galeri foto
-│       ├── reports.php        ← Laporan & analitik
-│       ├── settings.php       ← Pengaturan sistem
-│       ├── logout.php         ← Logout
+│       ├── login.php              ← Login admin
+│       ├── logout.php             ← Logout admin
+│       ├── dashboard.php          ← Dashboard & statistik
+│       ├── orders.php             ← Manajemen daftar pesanan
+│       ├── pesanan_edit.php       ← Detail & edit pesanan
+│       ├── pembayaran.php         ← Manajemen pembayaran & verifikasi bukti
+│       ├── customers.php          ← Data pelanggan
+│       ├── reports.php            ← Laporan & analitik
 │       └── partials/
-│           └── sidebar.php    ← Sidebar admin (reusable)
+│           └── sidebar.php        ← Sidebar admin (reusable)
 │
 ├── api/
-│   ├── order.php              ← POST: Submit pesanan baru
-│   ├── status.php             ← GET: Cek status pesanan
-│   └── upload_bukti.php       ← POST: Upload bukti pembayaran
+│   ├── order.php                  ← POST: Submit pesanan baru / GET: cek status
+│   ├── status.php                 ← GET: Cek status pesanan by kode
+│   └── upload_bukti.php           ← POST: Upload bukti pembayaran
 │
 ├── assets/
 │   ├── css/
-│   │   ├── main.css           ← Stylesheet utama
-│   │   └── admin.css          ← Stylesheet admin panel
+│   │   ├── main.css               ← Stylesheet halaman utama & landing
+│   │   ├── order.css              ← Stylesheet halaman pemesanan
+│   │   ├── status.css             ← Stylesheet halaman status pesanan
+│   │   └── admin.css              ← Stylesheet admin panel
 │   ├── js/
-│   │   ├── main.js            ← JavaScript shared
-│   │   ├── order.js           ← JavaScript form order
-│   │   └── admin.js           ← JavaScript admin panel
-│   └── uploads/               ← Folder upload (auto-dibuat)
-│       ├── bukti_bayar/       ← Bukti transfer pelanggan
-│       └── galeri/            ← Foto galeri
+│   │   ├── main.js                ← JavaScript halaman utama
+│   │   ├── order.js               ← JavaScript form order (maps, ongkir, multi-item)
+│   │   ├── status.js              ← JavaScript halaman status
+│   │   └── admin.js               ← JavaScript admin panel
+│   ├── img/                       ← Gambar statis (logo, produk, layanan)
+│   ├── video/
+│   │   └── promo-bup.mp4          ← Video promosi homepage
+│   └── uploads/
+│       ├── bukti_bayar/           ← Upload bukti transfer pelanggan
+│       └── galeri/                ← Foto galeri
+│
+├── uploads/
+│   └── bukti_bayar/               ← Alternatif folder upload bukti bayar
 │
 └── sql/
-    └── bup_database.sql       ← Schema & data awal database
+    └── bup_db (7).sql             ← Schema & data awal database (versi terbaru)
 ```
 
 ---
@@ -72,10 +80,10 @@ bup/
 
 ### 2. Copy File ke Server
 
-Salin seluruh folder `bup/` ke dalam direktori web server:
-- **XAMPP/WAMP**: `C:/xampp/htdocs/bup/`
-- **Laragon**: `C:/laragon/www/bup/`
-- **Linux**: `/var/www/html/bup/`
+Salin seluruh folder `bupp/` ke dalam direktori web server:
+- **XAMPP/WAMP**: `C:/xampp/htdocs/bupp/`
+- **Laragon**: `C:/laragon/www/bupp/`
+- **Linux**: `/var/www/html/bupp/`
 
 ---
 
@@ -84,102 +92,116 @@ Salin seluruh folder `bup/` ke dalam direktori web server:
 1. Buka **phpMyAdmin** (biasanya di `http://localhost/phpmyadmin`)
 2. Klik **"New"** → buat database baru bernama `bup_db`
 3. Pilih **Collation**: `utf8mb4_unicode_ci`
-4. Klik tab **SQL** atau **Import**
-5. Import file `sql/bup_database.sql`
+4. Klik tab **Import**
+5. Import file `sql/bup_db (7).sql` (versi terbaru)
 
 Atau jalankan via terminal:
 ```bash
-mysql -u root -p < sql/bup_database.sql
+mysql -u root -p bup_db < "sql/bup_db (7).sql"
 ```
 
 ---
 
 ### 4. Konfigurasi Database
 
-Buka file `config/database.php` dan sesuaikan:
+Salin file template lalu sesuaikan:
+```bash
+# Windows
+copy config\database.example.php config\database.php
 
+# Linux/Mac
+cp config/database.example.php config/database.php
+```
+
+Buka `config/database.php` dan sesuaikan:
 ```php
 define('DB_HOST', 'localhost');  // Host database
 define('DB_NAME', 'bup_db');     // Nama database
 define('DB_USER', 'root');       // Username MySQL kamu
-define('DB_PASS', '');           // Password MySQL kamu
+define('DB_PASS', '');           // Password MySQL kamu (kosong jika XAMPP default)
 ```
 
 ---
 
 ### 5. Konfigurasi URL Aplikasi
 
-Buka `config/app.php` dan sesuaikan URL:
-
+Buka `config/app.php` dan pastikan BASE_URL sesuai:
 ```php
-define('APP_URL', 'http://localhost/bup'); // Sesuaikan!
+define('BASE_URL', '/bupp');  // Sesuaikan dengan nama folder di htdocs
 ```
 
 ---
 
-### 6. Buat Folder Upload
+### 6. Folder Upload
 
-Buat folder ini jika belum ada, dan pastikan dapat ditulis (writable):
+Pastikan folder-folder berikut **ada dan bisa ditulis (writable)**:
 
 ```
-bup/assets/uploads/
-bup/assets/uploads/bukti_bayar/
-bup/assets/uploads/galeri/
+bupp/assets/uploads/bukti_bayar/
+bupp/assets/uploads/galeri/
+bupp/uploads/bukti_bayar/
 ```
 
 Di Linux/Mac:
 ```bash
-mkdir -p assets/uploads/bukti_bayar assets/uploads/galeri
 chmod -R 755 assets/uploads/
+chmod -R 755 uploads/
 ```
 
 ---
 
 ### 7. Akses Website
 
-- **Website utama**: `http://localhost/bup/`
-- **Form pesan**: `http://localhost/bup/pages/order.php`
-- **Cek status**: `http://localhost/bup/pages/status.php`
-- **Daftar harga**: `http://localhost/bup/pages/daftar-harga.php`
-- **Admin login**: `http://localhost/bup/pages/admin/login.php`
+- **Website utama**: `http://localhost/bupp/`
+- **Form pesan**: `http://localhost/bupp/pages/order.php`
+- **Cek status**: `http://localhost/bupp/pages/status.php`
+- **Admin login**: `http://localhost/bupp/pages/admin/login.php`
 
 ---
 
-### 8. Login Admin Pertama Kali
+### 8. Login Admin
 
 - **Username**: `admin`
 - **Password**: `admin123`
 
-> ⚠️ **WAJIB ganti password** setelah pertama login di menu **Pengaturan**!
+> ⚠️ **WAJIB ganti password** setelah pertama kali login!
 
 ---
 
-## 🔧 Konfigurasi Lanjutan
+## 🗺️ Fitur Google Maps
 
-### Ganti Nomor WhatsApp
-Edit di **Admin → Pengaturan** atau langsung di tabel `pengaturan`:
-```sql
-UPDATE pengaturan SET nilai='628xxxxxxxxxx' WHERE kunci='wa_number';
+Halaman pemesanan menggunakan **Google Maps API** untuk:
+- Menampilkan peta interaktif dengan pin yang bisa digeser
+- Autocomplete pencarian alamat
+- Kalkulasi jarak & ongkos kirim dinamis via OSRM
+
+Konfigurasi API Key ada di `pages/order.php`:
+```html
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initGoogleMaps">
 ```
 
-### Ganti Info Rekening
-Edit di **Admin → Pengaturan** (BCA, BRI, GoPay, DANA).
+> Ganti `YOUR_API_KEY` dengan Google Maps API Key milik kamu jika deploy ke server baru.
 
-### Mode Production
-Di `config/app.php`, ubah:
-```php
-define('APP_DEBUG', false); // Matikan di production!
-```
+---
+
+## 💰 Sistem Ongkos Kirim Dinamis
+
+| Jarak dari Toko | Ongkos Kirim |
+|---|---|
+| ≤ 4 km | Gratis (Rp 0) |
+| 4 – 10 km | Rp 15.000 |
+| 10 – 25 km | Rp 25.000 |
+| > 25 km | Diinfokan via WhatsApp |
 
 ---
 
 ## 🛡️ Tips Keamanan Production
 
-1. **Ganti password admin** segera setelah instalasi
-2. Hapus atau rename file `sql/bup_database.sql` setelah import
-3. Set `APP_DEBUG = false` di production
+1. **Jangan push** `config/database.php` ke repository (sudah di-ignore oleh `.gitignore`)
+2. **Ganti password admin** segera setelah instalasi
+3. Hapus atau batasi akses ke folder `sql/` setelah import
 4. Gunakan HTTPS (SSL certificate)
-5. Pastikan folder `assets/uploads/` tidak bisa dieksekusi PHP:
+5. Pastikan folder `uploads/` tidak bisa mengeksekusi PHP:
    ```
    # Tambahkan ke uploads/.htaccess
    php_flag engine off
@@ -191,18 +213,21 @@ define('APP_DEBUG', false); // Matikan di production!
 
 | Masalah | Solusi |
 |---------|--------|
-| Halaman blank | Cek error PHP, aktifkan `APP_DEBUG = true` sementara |
+| Halaman blank | Cek PHP error log, aktifkan `display_errors` sementara |
 | Database error | Periksa kredensial di `config/database.php` |
-| Upload gagal | Pastikan folder `assets/uploads/` ada dan writable |
-| Admin tidak bisa login | Pastikan tabel `admin` ada, password bcrypt valid |
-| CSS tidak muncul | Periksa `APP_URL` di `config/app.php` |
+| Upload gagal | Pastikan folder `uploads/` ada dan writable |
+| Admin tidak bisa login | Pastikan tabel `admin` ada dan password bcrypt valid |
+| CSS/JS tidak muncul | Periksa `BASE_URL` di `config/app.php` |
+| Maps tidak muncul | Cek Google Maps API Key, pastikan billing aktif |
+| Maps blank setelah refresh | Ini known issue — map lazy-init, coba pilih ulang metode pengiriman |
 
 ---
 
-## 📞 Support
+## 📞 Kontak
 
-Hubungi kami via WhatsApp atau Instagram jika ada pertanyaan.
+**BUP — Build Up Play**
+Jasa Laundry Sepatu
 
-**BUP — Build Up Play**  
-📍 Terentang Elok 2 No.11, Cakung, Jakarta Timur  
-📸 @buil.dupplay
+📍 Terentang Elok 2 No.11, Cakung, Jakarta Timur
+📱 WhatsApp: 0812-1181-1577
+📸 Instagram: @buil.dupplay
