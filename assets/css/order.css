@@ -1,0 +1,421 @@
+.receipt-row-old { display: flex !important; justify-content: space-between !important; padding: 10px 0 !important; border-bottom: 1px dashed #e2e8f0 !important; font-size: 0.85rem !important; gap: 8px !important; }
+.receipt-row-old .label { color: #000 !important; font-weight: 500 !important; width: 175px !important; flex-shrink: 0 !important; }
+.receipt-row-old .value { color: #000 !important; font-weight: 800 !important; text-align: right !important; flex: 1 !important; }
+/* Kelas khusus untuk menyembunyikan baris struk (alamat/waktu jemput) */
+.receipt-row-old.hidden-row { display: none !important; }
+
+@media print {
+    body * { visibility: hidden; }
+    #printableReceipt, #printableReceipt * { visibility: visible !important; color: #000 !important; }
+    /* Tetap sembunyikan baris yang memang tidak perlu ditampilkan saat cetak */
+    #printableReceipt .hidden-row,
+    #printableReceipt .hidden-row * { display: none !important; visibility: hidden !important; }
+    .no-print, nav, .footer, .btn, #mainOrderCard { display: none !important; }
+    
+    /* Reset layout body & container agar tidak ada jarak kosong dan tidak terpotong */
+    body {
+        background: #fff !important;
+        color: #000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .order-page {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+    }
+
+    .order-wrap {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    #step3 {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #printableReceipt {
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 20px !important;
+}
+
+/* Rapatkan jarak antar elemen khusus saat dicetak agar hemat kertas dan rapi */
+.receipt-header {
+    margin-bottom: 12px !important;
+    padding-bottom: 12px !important;
+}
+.receipt-header h2 {
+    font-size: 1.3rem !important;
+    margin-bottom: 4px !important;
+}
+    .receipt-header p {
+        font-size: 0.8rem !important;
+        margin-top: 2px !important;
+    }
+    
+    #printableReceipt h3 {
+        margin-bottom: 14px !important;
+        font-size: 1rem !important;
+    }
+
+    .receipt-row {
+        margin-bottom: 6px !important;
+        padding-bottom: 6px !important;
+        gap: 8px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+    
+    .receipt-row .label {
+        font-size: 0.8rem !important;
+    }
+    
+    .receipt-row .value {
+        font-size: 0.8rem !important;
+    }
+
+    #printableReceipt hr {
+        margin: 8px 0 !important;
+        border-top: 1px dashed #cbd5e1 !important;
+    }
+
+    .rcpt-total {
+        margin-top: 8px !important;
+        padding: 10px !important;
+        font-size: 1.1rem !important;
+        background: transparent !important;
+        border: 2px solid #000 !important;
+    }
+}
+
+*, *::before, *::after { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+
+/* ── Wrapper ── */
+.order-page { padding-top: 40px; padding-bottom: 60px; }
+.order-wrap { max-width: 780px !important; padding: 0 16px !important; margin: 0 auto; }
+.order-card { padding: 22px 18px !important; border-radius: 18px !important; }
+@media (min-width: 580px) {
+    .order-wrap { padding: 0 24px !important; }
+    .order-card { padding: 36px 32px !important; }
+}
+
+/* ── Section Title ── */
+.order-section-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.95rem; font-weight: 800; color: var(--blue);
+    margin: 0 0 18px 0; padding-bottom: 12px;
+    border-bottom: 1.5px dashed #e2e8f0;
+}
+.order-section-title .num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    font-size: 0.8rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Form Grid ── */
+.form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.form-grid.full { grid-template-columns: 1fr; }
+.item-form-grid { display: grid; }
+.fg-kategori { order: 1; }
+.fg-layanan { order: 2; }
+.fg-merk { order: 3; }
+.fg-jumlah { order: 4; }
+.fg-extra { order: 5; }
+
+@media (min-width: 580px) {
+    .form-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+    .fg-merk { order: 2; }
+    .fg-layanan { order: 3; }
+}
+
+/* ── Form Group & Split ── */
+.form-group { display: flex; flex-direction: column; gap: 7px; }
+.form-group label {
+    font-size: clamp(0.65rem, 3vw, 0.8rem); font-weight: 700; color: #475569;
+    text-transform: uppercase; letter-spacing: 0.04em;
+}
+.form-group label span { color: var(--blue); }
+
+.form-row-split { display: flex; gap: 12px; }
+@media (max-width: 480px) {
+    .form-row-split { gap: 8px; }
+    .form-row-split .form-group label {
+        font-size: 0.65rem;
+        letter-spacing: 0;
+        white-space: nowrap;
+    }
+    .form-row-split .form-input {
+        padding: 10px 8px;
+        font-size: 0.8rem;
+    }
+    .extra-treatment-box p {
+        font-size: 0.75rem !important;
+        margin-bottom: 8px !important;
+    }
+    .extra-treatment-box .btn-et-ya, 
+    .extra-treatment-box .btn-et-tidak {
+        font-size: 0.75rem !important;
+        padding: 8px 4px !important;
+        white-space: nowrap;
+    }
+}
+
+/* ── Inputs ── */
+.form-input, .form-select, .form-textarea {
+    width: 100%; padding: clamp(8px, 3vw, 12px) 14px;
+    border: 1.5px solid #cbd5e1; border-radius: 10px;
+    font-size: clamp(0.75rem, 3.5vw, 0.92rem); color: #1e293b; background: #fff;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    font-weight: 500; font-family: inherit;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+.form-input::placeholder, .form-textarea::placeholder { color: #94a3b8; font-weight: 400; }
+.form-select { cursor: pointer; }
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* ── Item Row (Detail Cucian) ── */
+.item-row {
+    background: #fff; border: 1.5px solid #e2e8f0;
+    border-radius: 16px; padding: 18px 16px;
+    margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+@media (min-width: 580px) { .item-row { padding: 22px 20px; margin-bottom: 20px; } }
+.item-header {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1.5px dashed #e2e8f0;
+}
+.item-title { font-size: 1rem; font-weight: 800; color: #0f172a; margin: 0; }
+.btn-hapus-item {
+    background: #fef2f2; color: #ef4444;
+    border: 1px solid #fee2e2; padding: 6px 12px;
+    border-radius: 30px; font-size: 0.75rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 5px;
+    white-space: nowrap; flex-shrink: 0;
+}
+.btn-hapus-item:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+
+/* ── Tambah Item Button ── */
+.btn-tambah {
+    width: 100%; border: 2px dashed #cbd5e1;
+    background: #f8fafc; color: #475569; font-weight: 700;
+    padding: clamp(10px, 3vw, 14px); border-radius: 12px; cursor: pointer;
+    transition: all 0.2s; font-size: clamp(0.75rem, 3.5vw, 0.9rem);
+    margin-bottom: 24px;
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+}
+.btn-tambah:hover { border-color: var(--blue); color: var(--blue); background: #eff6ff; }
+
+/* ── Option Grid (Shipping & Payment) ── */
+.option-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 8px; }
+@media (min-width: 440px) { .option-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.bup-card-box {
+    border: 1.5px solid #e2e8f0; border-radius: 12px;
+    background: #fff; cursor: pointer; transition: all 0.2s;
+}
+.bup-card-box:hover { border-color: #94a3b8; background: #f8fafc; }
+.bup-card-box.selected { border-color: var(--blue); background: #f0f9ff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+/* Shipping */
+.shipping-card { padding: clamp(10px, 2.5vw, 14px) clamp(12px, 3vw, 16px); display: flex; align-items: center; gap: clamp(8px, 2vw, 12px); min-height: 56px; }
+.shipping-card input[type="radio"] { width: 18px; height: 18px; accent-color: var(--blue); cursor: pointer; flex-shrink: 0; margin: 0; }
+.shipping-title { font-weight: 600; color: #64748b; font-size: clamp(0.6rem, 2.5vw, 0.85rem); line-height: 1.3; transition: color 0.2s; }
+.bup-card-box.selected .shipping-title { color: var(--blue); font-weight: 700; }
+
+/* Payment */
+.payment-card {
+    padding: 18px 14px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; gap: 8px; min-height: 110px;
+}
+.pay-ico { height: 36px; display: flex; align-items: center; justify-content: center; }
+.pay-info-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.pay-name { font-weight: 700; color: #475569; font-size: 0.9rem; transition: color 0.2s; }
+.bup-card-box.selected .pay-name { color: var(--blue); }
+.pay-detail { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
+
+/* ── Delivery Wrapper (Alamat + Waktu) ── */
+.delivery-wrapper {
+    display: none; flex-direction: column; gap: 14px;
+    margin-top: 14px; background: #f8fafc; padding: 16px;
+    border: 1.5px solid #cbd5e1; border-radius: 12px; width: 100%;
+}
+.delivery-wrapper.active { display: flex; }
+@media (min-width: 580px) {
+    .delivery-wrapper { flex-direction: row; align-items: flex-start; }
+    .delivery-wrapper > div:first-child { flex: 2; }
+    .delivery-wrapper > div:last-child { flex: 1; min-width: 175px; }
+}
+.delivery-wrapper label {
+    display: block; margin-bottom: 7px;
+    font-size: clamp(0.65rem, 3vw, 0.8rem); font-weight: 700;
+    color: #475569; text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+/* ── Price Estimate ── */
+.price-est {
+    background: #f8fafc; border-radius: 12px; padding: 16px 20px;
+    margin-top: 16px; border: 1px solid #e2e8f0;
+    display: flex; flex-direction: column; gap: 4px;
+    align-items: center; text-align: center;
+}
+.pe-price-box {
+    display: flex; flex-direction: column; align-items: center;
+}
+#priceOngkirWarning {
+    text-align: center;
+}
+@media (min-width: 580px) {
+    .price-est {
+        flex-direction: row; align-items: center; justify-content: space-between;
+        text-align: left;
+    }
+    .pe-price-box {
+        align-items: flex-end;
+    }
+    #priceOngkirWarning {
+        text-align: right;
+    }
+}
+.price-est .pe-label { font-size: 0.85rem; color: #64748b; font-weight: 500; }
+.price-est .pe-price { font-size: clamp(1.05rem, 4vw, 1.35rem); font-weight: 800; color: #0f172a; text-wrap: balance; }
+
+/* ── Timer ── */
+.timer-alert {
+    background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 24px;
+    display: flex; flex-direction: column; gap: 10px;
+}
+@media (min-width: 580px) {
+    .timer-alert { flex-direction: row; justify-content: space-between; align-items: center; }
+}
+.timer-alert .info { color: #1e3a8a; font-size: 0.9rem; }
+.timer-alert .time { font-size: 1.5rem; font-weight: 800; color: var(--blue); letter-spacing: 1px; white-space: nowrap; }
+
+/* ── Form Action Buttons ── */
+.form-actions {
+    display: flex; flex-direction: column-reverse; gap: 12px; margin-top: 28px;
+}
+@media (min-width: 480px) {
+    .form-actions { flex-direction: row; justify-content: flex-end; }
+    .form-actions .btn { width: auto; }
+}
+.form-actions .btn { width: 100%; justify-content: center; padding: 14px 28px; font-size: 0.95rem; }
+
+/* ── Receipt Box ── */
+.receipt-box {
+    background: #fff; border: 2px dashed #cbd5e1;
+    border-radius: 16px; padding: 24px 20px; margin-top: 24px;
+}
+@media (min-width: 580px) { .receipt-box { padding: 30px; } }
+.receipt-header { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed #e2e8f0; }
+.receipt-row {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; gap: 14px;
+    margin-bottom: 12px; padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.receipt-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.receipt-row .label { color: #64748b; font-size: 0.85rem; flex: 1; line-height: 1.5; }
+.receipt-row .value { font-weight: 700; color: #0f172a; font-size: 0.88rem; text-align: right; flex: 1.5; line-height: 1.5; word-break: break-word; }
+.receipt-row ul { margin: 0; padding-left: 16px; text-align: left; }
+.receipt-row li { font-size: 0.83rem; color: #475569; margin-bottom: 5px; font-weight: 500; }
+
+/* ── Delivery Wrapper Inner Divs ── */
+.dw-alamat { display: flex; flex-direction: column; gap: 7px; width: 100%; }
+.dw-waktu  { display: flex; flex-direction: column; gap: 7px; width: 100%; }
+.delivery-wrapper label { font-size: clamp(0.65rem, 3vw, 0.8rem); font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em; }
+.delivery-wrapper label span { color: var(--blue); }
+@media (min-width: 580px) {
+    .dw-alamat { flex: 2; }
+    .dw-waktu  { flex: 1; min-width: 170px; }
+}
+
+/* ── Payment Card Image Fix ── */
+.pay-ico img { max-width: 100%; height: 28px; width: auto; display: block; }
+.pay-ico svg { display: block; }
+.pay-info-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; }
+.pay-name { font-weight: 700; color: #475569; font-size: 0.88rem; transition: color 0.2s; text-align: center; word-break: break-word; }
+.bup-card-box.selected .pay-name { color: var(--blue); }
+.pay-detail { font-size: 0.75rem; color: #94a3b8; font-weight: 500; text-align: center; word-break: break-word; }
+
+/* ── Price Estimate — allow wrapping of ongkir note ── */
+.pe-price { font-size: clamp(1.05rem, 4vw, 1.35rem); line-height: 1.3; font-weight: 800; color: #0f172a; text-wrap: balance; }
+.pe-price small { display: block; font-size: 0.78rem; color: #64748b; font-weight: 500; margin-top: 4px; }
+
+/* ── Mobile-only: Detail Pembayaran (Step 2) & Receipt ── */
+@media (max-width: 579px) {
+    .pay-summary-box { padding: 16px !important; }
+    .hide-on-mobile { display: none !important; }
+    .pay-stack-mobile { flex-direction: column !important; align-items: flex-start !important; gap: 0px !important; }
+    .pay-stack-mobile strong { max-width: 100% !important; text-align: left !important; font-size: clamp(0.75rem, 3vw, 0.9rem) !important; margin-top: 2px; }
+    .pay-stack-mobile span { font-size: clamp(0.7rem, 2.8vw, 0.85rem) !important; }
+    /* pay-summary-box specific styles moved to inline in order.php */
+    .pay-total-row #sumTotal { font-size: clamp(1.1rem, 4vw, 1.4rem) !important; white-space: nowrap; overflow-wrap: normal; }
+
+    .step2-actions { flex-direction: column-reverse !important; }
+    .step2-actions .btn { width: 100% !important; text-align: center !important; justify-content: center !important; }
+
+    /* Fix Struk / Receipt di Mobile */
+    .receipt-row, .receipt-row-old {
+        font-size: clamp(0.65rem, 3vw, 0.85rem) !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+    }
+    
+    .receipt-row-old .label, .receipt-row .label {
+        width: auto !important;
+        text-align: left !important;
+        margin-bottom: 0 !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+    }
+    
+    .receipt-row-old .value, .receipt-row .value {
+        width: auto !important;
+        text-align: right !important;
+        flex: 1 !important;
+    }
+}
+
+/* ── Modal Animations ── */
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* -- Print Helpers -- */
+@media screen {
+    .print-only-row { display: none !important; }
+}
+@media print {
+    .print-only-row { display: flex !important; }
+}
+
+/* --- Tampilan Desktop Khusus Struk --- */
+@media (min-width: 768px) {
+    #printableReceipt {
+        max-width: 480px !important;
+        margin: 0 auto !important;
+        padding: 32px 32px 40px !important;
+        background: #fff;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03) !important;
+    }
+}

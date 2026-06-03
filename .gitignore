@@ -1,0 +1,29 @@
+# ============================================================
+# .gitignore — BUP Laravel/PHP Project
+# ============================================================
+
+# Konfigurasi database (berisi password, jangan di-push!)
+config/database.php
+
+# Folder upload bukti bayar pelanggan (data sensitif)
+uploads/bukti_bayar/*
+# Tapi tetap keep folder-nya agar struktur terjaga
+!uploads/bukti_bayar/.gitkeep
+
+# SQL backup (opsional, boleh di-push 1 file saja yang terbaru)
+# Hapus baris ini kalau mau push file SQL
+# sql/
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# XAMPP / PHP error log
+*.log
+php_errorlog
+
+# Folder git yang sudah salah nama (terlihat dari listing)
+{config,pages,includes,assets
