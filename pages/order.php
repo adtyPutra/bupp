@@ -127,6 +127,10 @@ $metode_pengiriman_db = $db->query("SELECT * FROM metode_pengiriman ORDER BY id 
                             </select>
                         </div>
                     </div>
+                    <div id="infoJadwalHabis" style="display:none; margin-top:10px; background:#fff7ed; border:1px solid #fed7aa; border-left:4px solid #f97316; border-radius:10px; padding:10px 14px; font-size:clamp(0.7rem, 3vw, 0.82rem); color:#c2410c; font-weight:600; line-height:1.6; align-items:flex-start; gap:8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>Semua jadwal hari ini sudah tidak tersedia. Silakan pilih <strong>tanggal besok</strong> untuk melanjutkan pemesanan.</span>
+                    </div>
 
                     <div class="form-grid" style="margin-top: 16px; align-items: start;">
                         <div class="form-group">

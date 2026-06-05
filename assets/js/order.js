@@ -69,8 +69,12 @@ function updateWaktuJemput() {
     if (isToday && !hasAvailableShift) {
         select.innerHTML = '<option value="">-- Waktu habis hari ini, pilih hari besok --</option>';
         select.disabled = true;
+        const infoEl = document.getElementById('infoJadwalHabis');
+        if (infoEl) infoEl.style.display = 'flex';
     } else {
         select.disabled = false;
+        const infoEl = document.getElementById('infoJadwalHabis');
+        if (infoEl) infoEl.style.display = 'none';
         // Kembalikan pilihan user jika masih ada di daftar opsi yang baru
         if (savedValue) {
             const exists = Array.from(select.options).some(opt => opt.value === savedValue);
