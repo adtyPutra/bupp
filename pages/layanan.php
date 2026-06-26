@@ -389,8 +389,8 @@ body {
           <a href="status.php">Status Pesanan</a>
         </div>
         <div class="nav-right">
-            <a href="login.php" class="btn btn-outline" style="border: 1px solid #1f2937; color: #1f2937; font-weight: 600; padding: 8px 18px; border-radius: 50px; text-decoration: none;">Login</a>
-            <a href="login.php?mode=register" class="btn btn-dark" style="padding: 8px 18px; border-radius: 50px; background-color: #1f2937; color: white; border: none; font-weight: 600; text-decoration: none;">Daftar</a>
+            <a href="auth/login.php" class="btn btn-outline" style="border: 1px solid #1f2937; color: #1f2937; font-weight: 600; padding: 8px 18px; border-radius: 50px; text-decoration: none;">Login</a>
+            <a href="auth/login.php?mode=register" class="btn btn-dark" style="padding: 8px 18px; border-radius: 50px; background-color: #1f2937; color: white; border: none; font-weight: 600; text-decoration: none;">Daftar</a>
         </div>
     <?php endif; ?>
     
@@ -412,8 +412,8 @@ body {
       <a href="../index.php" onclick="toggleMobMenu()">Beranda</a>
       <a href="layanan.php" onclick="toggleMobMenu()">Layanan</a>
       <a href="status.php" onclick="toggleMobMenu()">Status Pesanan</a>
-      <a href="login.php" class="btn btn-outline" style="margin-top:14px;justify-content:center; border: 1px solid #1f2937; color: #1f2937; border-radius: 50px;">Login</a>
-      <a href="login.php?mode=register" class="btn btn-dark" style="margin-top:8px;justify-content:center; border-radius: 50px;">Daftar</a>
+      <a href="auth/login.php" class="btn btn-outline" style="margin-top:14px;justify-content:center; border: 1px solid #1f2937; color: #1f2937; border-radius: 50px;">Login</a>
+      <a href="auth/login.php?mode=register" class="btn btn-dark" style="margin-top:8px;justify-content:center; border-radius: 50px;">Daftar</a>
   <?php endif; ?>
 </div>
 

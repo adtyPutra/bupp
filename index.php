@@ -58,7 +58,7 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
         <a href="#services">Layanan</a>
         <a href="#gallery">Galeri</a>
         <a href="#contact">Kontak</a>
-        <a href="pages/status.php">Status Pesanan</a>
+        <a href="pages/public/track_status.php">Status Pesanan</a>
       <?php endif; ?>
     </div>
     <div class="nav-right">
@@ -91,8 +91,8 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
           </div>
         </div>
       <?php else: ?>
-        <a href="pages/login.php" class="btn btn-outline" style="border: 1px solid #1f2937; color: #1f2937; font-weight: 600; padding: 8px 18px; border-radius: 50px; text-decoration: none;">Login</a>
-        <a href="pages/login.php?mode=register" class="btn btn-dark" style="padding: 8px 18px; border-radius: 50px; background-color: #1f2937; color: white; border: none; font-weight: 600; text-decoration: none;">Daftar</a>
+        <a href="pages/auth/login.php" class="btn btn-outline" style="border: 1px solid #1f2937; color: #1f2937; font-weight: 600; padding: 8px 18px; border-radius: 50px; text-decoration: none;">Login</a>
+        <a href="pages/auth/login.php?mode=register" class="btn btn-dark" style="padding: 8px 18px; border-radius: 50px; background-color: #1f2937; color: white; border: none; font-weight: 600; text-decoration: none;">Daftar</a>
       <?php endif; ?>
     </div>
     <div class="hamburger" id="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
@@ -114,9 +114,9 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
     <a href="#services" onclick="toggleMenu()">Layanan</a>
     <a href="#gallery" onclick="toggleMenu()">Galeri</a>
     <a href="#contact" onclick="toggleMenu()">Kontak</a>
-    <a href="pages/status.php" onclick="toggleMenu()">Status Pesanan</a>
-    <a href="pages/login.php" class="btn btn-outline" style="margin-top:14px;justify-content:center; border: 1px solid #1f2937; color: #1f2937; border-radius: 50px;">Login</a>
-    <a href="pages/login.php?mode=register" class="btn btn-dark" style="margin-top:8px;justify-content:center; border-radius: 50px;">Daftar</a>
+    <a href="pages/public/track_status.php" onclick="toggleMenu()">Status Pesanan</a>
+    <a href="pages/auth/login.php" class="btn btn-outline" style="margin-top:14px;justify-content:center; border: 1px solid #1f2937; color: #1f2937; border-radius: 50px;">Login</a>
+    <a href="pages/auth/login.php?mode=register" class="btn btn-dark" style="margin-top:8px;justify-content:center; border-radius: 50px;">Daftar</a>
   <?php endif; ?>
 </div>
 
@@ -131,8 +131,8 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
         <p class="hero-sub">Buat sepatu kamu kembali bersih, segar, dan seperti baru. Perawatan profesional untuk setiap jenis sepatu dari sneakers hingga formal shoes.</p>
         
         <div class="hero-actions">
-          <a href="pages/login.php" class="btn btn-dark">Pesan Sekarang</a>
-          <a href="pages/status.php" class="btn btn-outline">Cek Status</a>
+          <a href="pages/auth/login.php" class="btn btn-dark">Pesan Sekarang</a>
+          <a href="pages/public/track_status.php" class="btn btn-outline">Cek Status</a>
         </div>
       </div>
 
@@ -273,7 +273,7 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
               <?php if ($isLoggedIn): ?>
                   <a href="pages/order.php?layanan_id=<?= $s['id'] ?>" class="card-btn">Pesan Sekarang</a>
               <?php else: ?>
-                  <a href="pages/login.php" class="card-btn">Pesan Sekarang</a>
+                  <a href="pages/auth/login.php" class="card-btn">Pesan Sekarang</a>
               <?php endif; ?>
           </div>
         </div>
@@ -412,8 +412,8 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
     <h2>Siap Membuat Sepatu Kamu Seperti Baru?</h2>
     <p>Pesan sekarang dan rasakan layanan cuci sepatu berkualitas cepat, aman, dan profesional</p>
     <div class="actions">
-      <a href="pages/login.php" class="btn btn-blue">Pesan Sekarang</a>
-      <a href="pages/status.php" class="btn" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2)">Cek Status Pesanan</a>
+      <a href="pages/auth/login.php" class="btn btn-blue">Pesan Sekarang</a>
+      <a href="pages/public/track_status.php" class="btn" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2)">Cek Status Pesanan</a>
     </div>
   </div>
 </div>
@@ -440,7 +440,7 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
           <a href="#services">Layanan</a>
           <a href="#gallery">Galeri</a>
           <a href="#contact">Kontak</a>
-          <a href="pages/status.php">Status Pesanan</a>
+          <a href="pages/public/track_status.php">Status Pesanan</a>
         </div>
       </div>
       <div class="footer-col">

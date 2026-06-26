@@ -24,7 +24,7 @@ function getLoggedInCustomer(): ?array {
 function requireCustomerLogin(): void {
     if (!isCustomerLoggedIn()) {
         $redirect = urlencode($_SERVER['REQUEST_URI'] ?? '');
-        header('Location: ' . BASE_URL . '/pages/login.php' . ($redirect ? '?redirect=' . $redirect : ''));
+        header('Location: ' . BASE_URL . '/pages/auth/login.php' . ($redirect ? '?redirect=' . $redirect : ''));
         exit;
     }
 }
