@@ -7,23 +7,10 @@ function getDeskripsi(string $jenis, string $kategori): array {
     $base = defined('BASE_URL') ? BASE_URL : '/bupp';
     $baseImg = $base . '/assets/img/layanan/';
     
-    // Default image
-    $img = $baseImg . 'Sneakers Cleaning.png';
-
-    // Dynamic Image Selection based on Kategori
-    if ($k == 'sneakers') {
-        $img = $baseImg . 'Sneakers Cleaning.png';
-    } elseif ($k == 'boots shoes') {
-        $img = $baseImg . 'Boots Cleaning.png';
-    } elseif ($k == 'leather shoes') {
-        $img = $baseImg . 'Leather Care.png';
-    } elseif ($k == 'repaint') {
-        $img = $baseImg . 'Repaint Service.png';
-    } elseif ($k == 'unyellowing') {
-        $img = $baseImg . 'Unyellowing.png';
-    } else {
-        $img = $baseImg . 'Sneakers Cleaning.png';
-    }
+    // Dynamic Image Selection based on jenis
+    $imgFile = $baseImg . $jenis . '.png';
+    // Gunakan nama jenis sebagai nama file gambar (karena XAMPP Windows tidak case sensitive)
+    $img = $imgFile;
 
     // Default description
     $desc = "Perawatan khusus agar barang kesayangan Anda kembali bersih dan nyaman dipakai.";
