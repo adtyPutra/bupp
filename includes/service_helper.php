@@ -7,10 +7,38 @@ function getDeskripsi(string $jenis, string $kategori): array {
     $base = defined('BASE_URL') ? BASE_URL : '/bupp';
     $baseImg = $base . '/assets/img/layanan/';
     
-    // Dynamic Image Selection based on jenis
-    $imgFile = $baseImg . $jenis . '.png';
-    // Gunakan nama jenis sebagai nama file gambar (karena XAMPP Windows tidak case sensitive)
-    $img = $imgFile;
+    $imgFile = 'Sneakers deep clean.png'; // default fallback
+    
+    if ($k == 'sneakers') {
+        if (strpos($j, 'deep') !== false) $imgFile = 'Sneakers deep clean.png';
+        elseif (strpos($j, 'standard') !== false) $imgFile = 'Sneakers standar clean.png';
+        elseif (strpos($j, 'kids') !== false) $imgFile = 'Sneakers kids.png';
+    } elseif ($k == 'boots shoes') {
+        if (strpos($j, 'deep') !== false) $imgFile = 'Boots Deep Clean.png';
+        elseif (strpos($j, 'standard') !== false) $imgFile = 'Boots Standard Clean.png';
+        elseif (strpos($j, 'kids') !== false) $imgFile = 'Boots Kids.png';
+    } elseif ($k == 'outdoor shoes') {
+        if (strpos($j, 'deep') !== false) $imgFile = 'Outdoor Shoes Deep Clean.png';
+        elseif (strpos($j, 'standard') !== false) $imgFile = 'Outdoor Shoes Standard Clean.png';
+        elseif (strpos($j, 'kids') !== false) $imgFile = 'Outdoor Shoes Kids.png';
+    } elseif ($k == 'leather shoes') {
+        if (strpos($j, 'deep') !== false) $imgFile = 'Leather Shoes Deep Clean.png';
+        elseif (strpos($j, 'standard') !== false) $imgFile = 'Leather Shoes Standard Clean.png';
+    } elseif ($k == 'women shoes') {
+        if (strpos($j, 'heels') !== false) $imgFile = 'Heels.png';
+        elseif (strpos($j, 'flat') !== false) $imgFile = 'flat shoes.png';
+    } elseif ($k == 'repaint') {
+        if (strpos($j, 'suede') !== false) $imgFile = 'Repaint Suede Material.png';
+        elseif (strpos($j, 'canvas') !== false) $imgFile = 'Repaint Canvas Material.png';
+    } elseif ($k == 'unyellowing') {
+        if (strpos($j, 'upper') !== false) $imgFile = 'Upper Unyellowing.png';
+        elseif (strpos($j, 'midsole') !== false) $imgFile = 'Midsole Unyellowing.png';
+    } elseif ($k == 'extra treatment') {
+        if (strpos($j, 'deep') !== false) $imgFile = 'Extra Treatment-deep clean.png';
+        elseif (strpos($j, 'recolour') !== false) $imgFile = 'Recolour.png';
+    }
+
+    $img = $baseImg . $imgFile;
 
     // Default description
     $desc = "Perawatan khusus agar barang kesayangan Anda kembali bersih dan nyaman dipakai.";
