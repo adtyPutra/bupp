@@ -65,43 +65,8 @@ function getDeskripsi(string $jenis, string $kategori): array {
         } elseif (strpos($j, 'flat shoes') !== false) {
             $desc = "Membersihkan sepatu datar secara menyeluruh agar bebas dari kotoran dan noda.";
         }
-    } elseif ($k == 'bag') {
-        if (strpos($j, 'leather') !== false) {
-            $ukuran = "";
-            if (strpos($j, 'large') !== false) $ukuran = " besar";
-            elseif (strpos($j, 'medium') !== false) $ukuran = " sedang";
-            elseif (strpos($j, 'small') !== false) $ukuran = " kecil";
-            $desc = "Pembersihan menyeluruh pada bagian luar dan dalam tas kulit ukuran" . $ukuran . " untuk membantu menjaga kebersihan dan tampilan material kulit.";
-        } elseif (strpos($j, 'carrier') !== false) {
-            $desc = "Pembersihan menyeluruh pada bagian luar dan dalam tas carrier untuk membantu mengangkat debu, noda, dan kotoran yang menempel.";
-        } else {
-            $ukuran = "";
-            if (strpos($j, 'large') !== false) $ukuran = " besar";
-            elseif (strpos($j, 'medium') !== false) $ukuran = " sedang";
-            elseif (strpos($j, 'small') !== false) $ukuran = " kecil";
-            $desc = "Pembersihan menyeluruh pada bagian luar dan dalam tas ukuran" . $ukuran . " untuk membantu mengangkat debu, noda, dan kotoran yang menempel.";
-        }
-    } elseif ($k == 'wallet') {
-        if (strpos($j, 'non leather') !== false) {
-            $desc = "Membersihkan kotoran dan debu pada dompet non-kulit secara menyeluruh agar tampilannya kembali bersih.";
-        } else {
-            $desc = "Membersihkan noda pada dompet kulit dengan hati-hati agar permukaannya bersih tanpa merusak bahannya.";
-        }
-    } elseif ($k == 'sandals') {
-        $ukuran = "";
-        if (strpos($j, 'medium') !== false) $ukuran = " ukuran sedang";
-        elseif (strpos($j, 'small') !== false) $ukuran = " ukuran kecil";
-        $desc = "Membersihkan sandal" . $ukuran . " secara menyeluruh agar bebas dari noda membandel yang menempel di alas maupun sela-sela.";
-    } elseif ($k == 'hat') {
-        $ukuran = "";
-        if (strpos($j, 'large') !== false) $ukuran = " ukuran besar";
-        elseif (strpos($j, 'medium') !== false) $ukuran = " ukuran sedang";
-        elseif (strpos($j, 'small') !== false) $ukuran = " ukuran kecil";
-        $desc = "Membersihkan topi" . $ukuran . " secara menyeluruh agar kotoran dan bekas keringat hilang.";
     } elseif ($k == 'repaint') {
-        if (strpos($j, 'hat') !== false) {
-            $desc = "Mewarnai ulang topi yang sudah pudar agar warnanya rata dan tampak segar kembali.";
-        } elseif (strpos($j, 'canvas') !== false) {
+        if (strpos($j, 'canvas') !== false) {
             $desc = "Mewarnai ulang sepatu berbahan kanvas agar warnanya rata dan kembali terlihat seperti baru.";
         } elseif (strpos($j, 'suede') !== false) {
             $desc = "Mewarnai ulang sepatu berbahan suede secara hati-hati agar warnanya rata dan kembali terlihat seperti baru.";

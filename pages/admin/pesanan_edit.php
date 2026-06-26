@@ -528,10 +528,6 @@ $metode_pengiriman_db = $db->query("SELECT * FROM metode_pengiriman ORDER BY id 
                                     <option value="Outdoor Shoes">Outdoor Shoes</option>
                                     <option value="Leather Shoes">Leather Shoes</option>
                                     <option value="Women Shoes">Women Shoes</option>
-                                    <option value="Bag">Bag</option>
-                                    <option value="Wallet">Wallet</option>
-                                    <option value="Sandals">Sandals</option>
-                                    <option value="Hat">Hat</option>
                                     <option value="Repaint">Repaint</option>
                                     <option value="Unyellowing">Unyellowing</option>
                                 </select>
@@ -639,7 +635,13 @@ $metode_pengiriman_db = $db->query("SELECT * FROM metode_pengiriman ORDER BY id 
 <?php if (!isset($_GET['success_id'])): ?>
 <script>
 const DATA_LAYANAN = [
-    <?php foreach ($layanan as $l): ?>
+    <?php 
+    $excluded = ['bag', 'wallet', 'sandals', 'hat'];
+    foreach ($layanan as $l): 
+        $catStr = strtolower(trim($l['kategori']));
+        if (in_array($catStr, $excluded)) continue;
+        if ($catStr === 'repaint' && (stripos($l['jenis'], 'hat') !== false || stripos($l['jenis'], 'topi') !== false)) continue;
+    ?>
     {
         id: "<?= $l['id'] ?>",
         kategori: <?= json_encode($l['kategori']) ?>,

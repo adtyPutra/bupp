@@ -532,10 +532,6 @@ function tambahItem() {
                     <option value="Outdoor Shoes">Outdoor Shoes</option>
                     <option value="Leather Shoes">Leather Shoes</option>
                     <option value="Women Shoes">Women Shoes</option>
-                    <option value="Bag">Bag</option>
-                    <option value="Wallet">Wallet</option>
-                    <option value="Sandals">Sandals</option>
-                    <option value="Hat">Hat</option>
                     <option value="Repaint">Repaint</option>
                     <option value="Unyellowing">Unyellowing</option>
                 </select>
@@ -752,8 +748,8 @@ function updatePrice() {
             if (katSel && ukuranInput) {
                 const kat = katSel.value;
                 const layananText = sel.selectedIndex > 0 ? sel.options[sel.selectedIndex].textContent : "";
-                const noSizeKategori = ['Bag', 'Wallet', 'Sandals', 'Hat'];
-                const hideSize = noSizeKategori.includes(kat) || (kat === 'Repaint' && layananText.includes('Hat'));
+                const noSizeKategori = [];
+                const hideSize = noSizeKategori.includes(kat);
 
                 const ukuranContainer = ukuranInput.closest('.form-group');
                 if (hideSize) {

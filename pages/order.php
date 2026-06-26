@@ -386,7 +386,13 @@ if ($isLoggedIn) {
 
 <script>
 const DATA_LAYANAN = [
-    <?php foreach ($layanan as $l): ?>
+    <?php 
+    $excluded = ['bag', 'wallet', 'sandals', 'hat'];
+    foreach ($layanan as $l): 
+        $catStr = strtolower(trim($l['kategori']));
+        if (in_array($catStr, $excluded)) continue;
+        if ($catStr === 'repaint' && (stripos($l['jenis'], 'hat') !== false || stripos($l['jenis'], 'topi') !== false)) continue;
+    ?>
     {
         id: "<?= $l['id'] ?>",
         kategori: <?= json_encode($l['kategori']) ?>,

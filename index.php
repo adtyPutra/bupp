@@ -148,7 +148,7 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
 
 <div class="marquee">
   <div class="mq-track">
-    <?php $items = ['Sneakers Cleaning','Boots Cleaning', 'Bag Cleaning', 'Unyellowing Treatment','Repaint','Pick Up & Delivery','WALLET Cleaning'];
+    <?php $items = ['Sneakers Cleaning','Boots Cleaning', 'Unyellowing Treatment','Repaint','Pick Up & Delivery'];
     $all = array_merge($items, $items);
     foreach ($all as $item): ?>
       <span class="mq-item"><span class="dot">●</span><?= htmlspecialchars($item) ?></span>
@@ -254,7 +254,12 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
   <div id="svcScroll" class="hide-scrollbar" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 20px; padding-bottom: 24px; scroll-behavior: smooth;">
-    <?php foreach ($layananList as $s): 
+    <?php 
+      $excluded = ['bag', 'wallet', 'sandals', 'hat'];
+      foreach ($layananList as $s): 
+        $catStr = strtolower(trim($s['kategori']));
+        if (in_array($catStr, $excluded)) continue;
+        if ($catStr === 'repaint' && (stripos($s['jenis'], 'hat') !== false || stripos($s['jenis'], 'topi') !== false)) continue;
         $details = getDeskripsi($s['jenis'], $s['kategori']);
     ?>
       <div class="card fade-up" style="flex: 0 0 280px; scroll-snap-align: start;">
@@ -443,10 +448,8 @@ $namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0
         <div class="footer-links">
           <a href="#services">Sneakers Cleaning</a>
           <a href="#services">Boots Cleaning</a>
-          <a href="#services">Bag Cleaning</a>
           <a href="#services">Unyellowing Treatment</a>
           <a href="#services">Repaint</a>
-          <a href="#services">Wallet Cleaning</a>
           <a href="#services">Pick Up & Delivery</a>
         </div>
       </div>

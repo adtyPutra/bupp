@@ -17,7 +17,11 @@ $layananList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Unique categories
 $categories = [];
 $filteredLayanan = [];
+$excludedCategories = ['bag', 'wallet', 'sandals', 'hat'];
 foreach ($layananList as $l) {
+    $catStr = strtolower(trim($l['kategori']));
+    if (in_array($catStr, $excludedCategories)) continue;
+    if ($catStr === 'repaint' && (stripos($l['jenis'], 'hat') !== false || stripos($l['jenis'], 'topi') !== false)) continue;
     $filteredLayanan[] = $l;
     if (!in_array($l['kategori'], $categories)) {
         $categories[] = $l['kategori'];

@@ -111,10 +111,6 @@ function tambahItem() {
                     <option value="Outdoor Shoes">Outdoor Shoes</option>
                     <option value="Leather Shoes">Leather Shoes</option>
                     <option value="Women Shoes">Women Shoes</option>
-                    <option value="Bag">Bag</option>
-                    <option value="Wallet">Wallet</option>
-                    <option value="Sandals">Sandals</option>
-                    <option value="Hat">Hat</option>
                     <option value="Repaint">Repaint</option>
                     <option value="Unyellowing">Unyellowing</option>
                 </select>
@@ -262,17 +258,7 @@ function updateLayananDynamic(selEl) {
     }
 
     if (merkInput) {
-        if (kategoriPilihan === 'Bag') {
-            merkInput.placeholder = 'cth: Gucci';
-        } else if (kategoriPilihan === 'Wallet') {
-            merkInput.placeholder = 'cth: Polo';
-        } else if (kategoriPilihan === 'Sandals') {
-            merkInput.placeholder = 'cth: Eiger';
-        } else if (kategoriPilihan === 'Hat') {
-            merkInput.placeholder = 'cth: Adidas';
-        } else {
-            merkInput.placeholder = 'cth: Nike';
-        }
+        merkInput.placeholder = 'cth: Nike';
     }
 
     layananSelect.disabled = false;
@@ -396,8 +382,8 @@ function updatePrice() {
                     isLongProcessItem = true;
                 }
 
-                const noSizeKategori = ['Bag', 'Wallet', 'Sandals', 'Hat'];
-                const hideSize = noSizeKategori.includes(kat) || (kat === 'Repaint' && layananText.includes('Hat'));
+                const noSizeKategori = [];
+                const hideSize = noSizeKategori.includes(kat);
 
                 const ukuranContainer = ukuranInput.closest('.form-group');
                 if (hideSize) {
@@ -606,7 +592,7 @@ function goToStep(step) {
 
             const kat = katChecks[i].value;
             const layText = layChecks[i].selectedIndex > 0 ? layChecks[i].options[layChecks[i].selectedIndex].textContent : "";
-            const isNoSize = ['Bag', 'Wallet', 'Sandals', 'Hat'].includes(kat) || (kat === 'Repaint' && layText.includes('Hat'));
+            const isNoSize = false;
             if (!isNoSize && (!uChecks[i] || !uChecks[i].value.trim())) return alert(`Item #${i + 1}: Ukuran sepatu wajib diisi!`);
             if (!wChecks[i] || !wChecks[i].value.trim()) return alert(`Item #${i + 1}: Warna wajib diisi!`);
         }
