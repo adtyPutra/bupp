@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// pages/status.php — Cek Status Pesanan
+// pages/success.php — Pesanan Berhasil Dibuat
 // ============================================================
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/database.php';
@@ -8,67 +8,50 @@ require_once __DIR__ . '/../includes/customer_auth.php';
 
 $customerLoggedIn = isCustomerLoggedIn();
 $customer         = getLoggedInCustomer();
+$kode             = $_GET['kode'] ?? '';
+
+if (!$kode) {
+    header("Location: ../index.php");
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Pesanan | BUP</title>
+    <title>Pesanan Berhasil | BUP</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/main.css?v=<?= time() ?>">
-<link rel="stylesheet" href="../assets/css/status.css?v=<?= time() ?>">
-<link rel="stylesheet" href="../assets/css/customer.css?v=<?= time() ?>">
-
+    <link rel="stylesheet" href="../assets/css/status.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="../assets/css/customer.css?v=<?= time() ?>">
 </head>
 <body>
 
 <?php if (file_exists(__DIR__ . '/partials/navbar.php')) include __DIR__ . '/partials/navbar.php'; ?>
 
-<?php
-$isNew = isset($_GET['new']) && $_GET['new'] == '1';
-$isInvoice = isset($_GET['view']) && $_GET['view'] == 'invoice';
-$hideSearch = $isNew || $isInvoice;
-?>
 <div class="status-container">
-    <?php if ($isNew): ?>
-    <div style="background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; border-radius:12px; padding:16px 20px; margin-bottom:24px; display:flex; align-items:center; gap:14px; font-weight:600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; color:#10b981; background: #fff; border-radius: 50%; padding: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <div style="line-height: 1.4;">
-            Terima kasih! Pesanan berhasil dibuat dan sedang diproses. <br>
-            <span style="font-size: 0.85rem; font-weight: 500; opacity: 0.85;">Silakan pantau status pengerjaan sepatu Anda di bawah ini.</span>
+    <div class="status-header" style="text-align: center; margin-bottom: 24px;">
+        <div style="display: inline-flex; justify-content: center; align-items: center; width: 64px; height: 64px; background: #dcfce7; border-radius: 50%; color: #16a34a; margin-bottom: 16px;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-    </div>
-    <?php elseif (!$isInvoice): ?>
-    <div class="status-header">
-        <h2>Cek Status Pesanan</h2>
-        <p>Masukkan Kode Pesanan (contoh: BUP-X7K9K1) untuk melihat status terbaru.</p>
-    </div>
-    <?php endif; ?>
-
-    <?php if ($customerLoggedIn && !$hideSearch): ?>
-    <!-- Banner untuk pelanggan yang sudah login -->
-    <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe); border:1px solid #bfdbfe; border-radius:14px; padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div style="width:36px; height:36px; background:var(--blue); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:0.8rem; flex-shrink:0;"><?= strtoupper(substr($customer['nama'], 0, 2)) ?></div>
-            <div>
-                <div style="font-size:0.85rem; font-weight:700; color:#1e3a8a;">Halo, <?= htmlspecialchars(explode(' ', $customer['nama'])[0]) ?>!</div>
-                <div style="font-size:0.78rem; color:#3b82f6;">Lihat semua pesananmu dengan mudah</div>
-            </div>
-        </div>
-        <a href="customer/my-orders.php" style="background:var(--blue); color:#fff; padding:8px 18px; border-radius:999px; font-size:0.82rem; font-weight:700; white-space:nowrap;">Riwayat Pesanan →</a>
-    </div>
-    <?php endif; ?>
-
-    <div class="search-box" <?= $hideSearch ? 'style="display:none;"' : '' ?>>
-        <input type="text" id="statusInput" class="search-input" placeholder="Masukkan Kode Pesanan..." autocomplete="off">
-        <button class="search-btn" onclick="checkStatus()">Cek Status</button>
+        <h2 style="color: #16a34a; font-weight: 900; font-size: 1.8rem; margin: 0 0 8px 0;">Pesanan Berhasil Dibuat!</h2>
+        <p style="color: #475569; font-size: 1rem; margin: 0; line-height: 1.6;">Terima kasih telah mempercayakan sepatu Anda kepada BUP Laundry.<br>Berikut adalah rincian bukti pesanan Anda.</p>
     </div>
 
+    <!-- Hidden search box just to satisfy status.js -->
+    <div class="search-box" style="display: none;">
+        <input type="text" id="statusInput" class="search-input" value="<?= htmlspecialchars($kode) ?>">
+    </div>
 
     <div id="statusResult" class="result-card"></div>
 
     <div class="btn-back-wrap" id="actionButtons" style="display: flex; justify-content: center; gap: 16px; margin-top: 32px; flex-wrap: wrap;">
+        <?php if ($customerLoggedIn): ?>
+            <a href="customer/my-orders.php" class="btn" style="background: var(--blue); color: #fff; padding: 12px 24px; border-radius: 10px; font-weight: 700; text-decoration: none;">
+                Lihat Riwayat Transaksi
+            </a>
+        <?php endif; ?>
         <a href="../index.php" class="btn-back">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             Kembali ke Beranda
@@ -109,7 +92,7 @@ $hideSearch = $isNew || $isInvoice;
     
     <div style="border-top: 1px dashed #cbd5e1; margin-bottom: 20px;"></div>
     
-    <h3 id="rTitle" style="text-align:center; margin-bottom:20px; font-size:1.05rem; color:#000; font-weight:800;">BUKTI PEMBAYARAN</h3>
+    <h3 id="rTitle" style="text-align:center; margin-bottom:20px; font-size:1.05rem; color:#000; font-weight:800;">BUKTI PEMESANAN</h3>
     
     <div class="receipt-row-old"><span class="label">Kode Pesanan:</span><span class="value" id="rKode">-</span></div>
     <div class="receipt-row-old"><span class="label">Tanggal Pesan:</span><span class="value" id="rTglPesan">-</span></div>
@@ -136,21 +119,20 @@ $hideSearch = $isNew || $isInvoice;
         <span class="label" style="color:#000; font-weight:900; font-size: clamp(0.85rem, 3.5vw, 1rem); white-space: nowrap;">TOTAL HARGA:</span>
         <span class="value" id="rTotal" style="color:#000; font-weight:900; font-size: clamp(0.95rem, 4.5vw, 1.2rem); white-space: nowrap; text-align: right;">Rp 0</span>
     </div>
-
-    <div id="paymentInstructionBox" style="display:none; margin-top:24px; padding:20px; border-radius:12px; text-align:center; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
-        <div id="payInstIcon" style="margin-bottom:12px;"></div>
-        <h4 id="payInstTitle" style="margin:0 0 8px 0; font-size:1.05rem; font-weight:800; color:#1e293b;">-</h4>
-        <p id="payInstDesc" style="margin:0; font-size:0.9rem; color:#475569; line-height:1.5;">-</p>
-    </div>
     
     <div style="border-top: 1px dashed #cbd5e1; margin-top: 20px;"></div>
     </div><!-- end z-index wrapper -->
 </div>
 
+<!-- Load JS that populates everything based on the ?kode= parameter -->
 <script src="../assets/js/status.js?v=<?= time() ?>"></script>
-
 <script src="../assets/js/main.js"></script>
+
+<!-- CSS overrides for success page if needed -->
+<style>
+/* Remove the top 'Cek Status Pesanan' header because we use our own success header */
+.status-header { display: block !important; }
+</style>
+
 </body>
 </html>
-
-

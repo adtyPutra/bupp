@@ -150,7 +150,7 @@ if (count($semua_pesanan) > 0) {
     }
 }
 
-$list_filter = ['Semua', 'Diterima', 'Diproses', 'Dicuci', 'Dikeringkan', 'Finishing', 'Siap Diambil', 'Diantar Kurir', 'Selesai'];
+$list_filter = ['Semua', 'Diterima', 'Dicuci', 'Dikeringkan', 'Finishing', 'Siap Diambil', 'Diantar Kurir', 'Selesai'];
 ?>
 <!DOCTYPE html>
 <html lang="id" class="page-orders">
@@ -161,7 +161,6 @@ $list_filter = ['Semua', 'Diterima', 'Diproses', 'Dicuci', 'Dikeringkan', 'Finis
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/css/main.css">
-
 <link rel="stylesheet" href="../../assets/css/admin.css?v=<?= time() ?>">
 </head>
 
@@ -319,22 +318,14 @@ $list_filter = ['Semua', 'Diterima', 'Diproses', 'Dicuci', 'Dikeringkan', 'Finis
               <td style="text-align: center;">
                 <?php
                   $st = strtolower($o['status_pesanan']);
-                  $is_waiting_pay = ($o['status_bayar'] == 'pending' && !in_array(strtolower($o['metode_bayar']), ['tunai','cash']));
-                  
-                  if ($is_waiting_pay && $st == 'diterima') {
-                      $badge = 'bg-batal';
-                      $st_label = 'Menunggu Konfirmasi';
-                  } else {
-                      $badge = 'bg-diterima';
-                      if($st=='diproses') { $badge='bg-diproses'; }
-                      elseif($st=='finishing') { $badge='bg-finishing'; }
-                      elseif($st=='siap_diambil') { $badge='bg-finishing'; }
-                      elseif($st=='diantar_kurir') { $badge='bg-finishing'; }
-                      elseif($st=='selesai') { $badge='bg-selesai'; }
-                      elseif($st=='batal') { $badge='bg-batal'; }
-                      elseif($st=='dicuci'||$st=='dikeringkan') { $badge='bg-dicuci'; }
-                      $st_label = ucwords(str_replace('_', ' ', $st));
-                  }
+                  $badge = 'bg-diterima';
+                  if($st=='finishing') { $badge='bg-finishing'; }
+                  elseif($st=='siap_diambil') { $badge='bg-finishing'; }
+                  elseif($st=='diantar_kurir') { $badge='bg-finishing'; }
+                  elseif($st=='selesai') { $badge='bg-selesai'; }
+                  elseif($st=='batal') { $badge='bg-batal'; }
+                  elseif($st=='dicuci'||$st=='dikeringkan') { $badge='bg-dicuci'; }
+                  $st_label = ucwords(str_replace('_', ' ', $st));
                 ?>
                 <span class="badge <?= $badge ?>"><?= htmlspecialchars($st_label) ?></span>
               </td>
@@ -467,7 +458,6 @@ $list_filter = ['Semua', 'Diterima', 'Diproses', 'Dicuci', 'Dikeringkan', 'Finis
             <label class="form-label" style="color: var(--primary);">Update Status Pengerjaan</label>
             <select name="status_pesanan" id="e_status" class="form-control" style="text-transform: capitalize; border-color: #bfdbfe; background: #eff6ff;">
                 <option value="diterima">Diterima</option>
-                <option value="diproses">Diproses</option>
                 <option value="dicuci">Dicuci</option>
                 <option value="dikeringkan">Dikeringkan</option>
                 <option value="finishing">Finishing</option>

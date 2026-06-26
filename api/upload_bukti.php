@@ -19,8 +19,8 @@ if (!isset($_FILES['bukti_bayar']) || $_FILES['bukti_bayar']['error'] !== UPLOAD
 }
 
 $upload = uploadBuktiBayar($_FILES['bukti_bayar']);
-if (!$upload['success']) {
-    jsonResponse(['success' => false, 'message' => $upload['message']], 400);
+if (!$upload) {
+    jsonResponse(['success' => false, 'message' => 'Gagal mengunggah bukti. Pastikan format gambar sesuai (JPG/PNG).'], 400);
 }
 
 $db = getDB();
@@ -37,10 +37,10 @@ if ($pesanan['bukti_bayar'] && file_exists(UPLOAD_DIR . $pesanan['bukti_bayar'])
 }
 
 $stmt2 = $db->prepare("UPDATE pesanan SET bukti_bayar = ?, status_bayar = 'pending', updated_at = NOW() WHERE kode_pesanan = ?");
-$stmt2->execute([$upload['filename'], $kode_pesanan]);
+$stmt2->execute([$upload, $kode_pesanan]);
 
 jsonResponse([
     'success' => true,
     'message' => 'Bukti pembayaran berhasil diupload',
-    'file_url' => UPLOAD_URL . $upload['filename']
+    'file_url' => UPLOAD_URL . $upload
 ]);

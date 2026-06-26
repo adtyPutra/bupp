@@ -123,11 +123,11 @@ function tambahItem() {
                 <div class="form-row-split">
                     <div class="form-group" style="flex: 1; min-width: 0;">
                         <label>Merek <span>*</span></label>
-                        <input type="text" class="form-input merk-input" name="sepatu[]" placeholder="Merek (cth: Nike)" required style="width: 100%;">
+                        <input type="text" class="form-input merk-input" name="sepatu[]" placeholder="Merek (cth: Nike)" required style="width: 100%;" oninput="updateCheckoutSummary()">
                     </div>
                     <div class="form-group" style="flex: 1; min-width: 0;">
                         <label>Ukuran <span>*</span></label>
-                        <input type="text" class="form-input ukuran-input" name="ukuran[]" placeholder="Size (cth: 42)" required style="width: 100%;">
+                        <input type="text" class="form-input ukuran-input" name="ukuran[]" placeholder="Size (cth: 42)" required style="width: 100%;" oninput="updateCheckoutSummary()">
                     </div>
                 </div>
             </div>
@@ -145,7 +145,7 @@ function tambahItem() {
                     </div>
                     <div class="form-group" style="flex: 1; min-width: 0;">
                         <label>Warna <span>*</span></label>
-                        <input type="text" class="form-input warna-input" name="warna[]" placeholder="cth: Hitam" required style="width: 100%;">
+                        <input type="text" class="form-input warna-input" name="warna[]" placeholder="cth: Hitam" required style="width: 100%;" oninput="updateCheckoutSummary()">
                     </div>
                 </div>
             </div>
@@ -166,7 +166,7 @@ function tambahItem() {
             </div>
         </div>
         <div class="est-item-box" style="display:none; margin-top: 14px; background: #eff6ff; padding: 10px 12px; border-radius: 10px; border: 1px solid #bfdbfe; font-size: clamp(0.65rem, 2.8vw, 0.75rem); color: #1e3a8a; font-weight: 600; line-height: 1.4; text-align: center;">
-            <span style="display: block; word-break: break-word;">Estimasi Pengerjaan: <strong class="item-estimasi-text">3 - 5 Hari Kerja</strong></span>
+            <span style="display: inline-block;">Estimasi Pengerjaan: <strong class="item-estimasi-text">3 - 5 Hari Kerja</strong></span>
         </div>
     `;
     container.appendChild(row);
@@ -181,42 +181,46 @@ function hapusItem(btn) {
 }
 
 function togglePengirimanUI(radioEl) {
-    document.querySelectorAll('.shipping-card').forEach(c => c.classList.remove('selected'));
-    radioEl.closest('.shipping-card').classList.add('selected');
+    document.querySelectorAll('.shipping-method-card').forEach(c => c.classList.remove('selected'));
+    if (radioEl && radioEl.closest('.shipping-method-card')) {
+        radioEl.closest('.shipping-method-card').classList.add('selected');
+    }
 
     const group = document.getElementById('alamatGroup');
     const inputAlamat = document.getElementById('oAlamat');
     const inputWaktu = document.getElementById('oWaktuJemput');
+    const inputTanggal = document.getElementById('oTanggal');
     const infoOngkir = document.getElementById('infoOngkirBox'); // Panggil kotak informasi
-    const labelTanggal = document.getElementById('labelTanggalOrder');
+    const infoToko = document.getElementById('infoAmbilToko');
 
     if (radioEl.getAttribute('data-perlu-jemput') === '1') {
         group.classList.add('active');
+        group.style.display = 'block';
+        if (infoToko) infoToko.style.display = 'none';
         inputAlamat.required = true;
         inputWaktu.required = true;
-        if (labelTanggal) labelTanggal.innerHTML = 'Tanggal Penjemputan <span>*</span>';
+        if (inputTanggal) inputTanggal.required = true;
 
         if (infoOngkir) {
             infoOngkir.style.display = 'block';
-            
-            // Jangan kosongkan alamat jika saat ini sedang restore state (ada isinya tapi kita baru render)
-            // Tapi jika user klik manual, biasanya isinya kosong/beda, kita bisa biarkan saja.
-            // Lebih baik kita hapus saja baris inputAlamat.value = '' karena jika mereka mau ubah, mereka tinggal search lagi.
 
             // Lazy init: buat map pertama kali saat section visible
             if (!mapCreated) {
-                createMap(); 
+                createMap(); // createMap sudah handle delay 200ms sendiri
             } else {
-                // Map sudah ada, cukup resize
+                // Map sudah ada, perlu resize karena container sempat display:none
                 if (map) {
                     setTimeout(() => {
                         google.maps.event.trigger(map, 'resize');
-                        const savedLat = sessionStorage.getItem('bupp_order_lat');
-                        const savedLng = sessionStorage.getItem('bupp_order_lng');
+                        // Gunakan key yang benar: 'bup_lat' / 'bup_lng'
+                        const savedLat = sessionStorage.getItem('bup_lat');
+                        const savedLng = sessionStorage.getItem('bup_lng');
                         if (savedLat && savedLng) {
                             map.setCenter({ lat: parseFloat(savedLat), lng: parseFloat(savedLng) });
+                        } else {
+                            map.setCenter({ lat: STORE_LAT, lng: STORE_LNG });
                         }
-                    }, 50);
+                    }, 200); // 200ms agar browser selesai render container
                 }
                 // Hanya lacak ulang jika bukan dari state restore
                 if (!inputAlamat.value) {
@@ -226,12 +230,17 @@ function togglePengirimanUI(radioEl) {
         }
     } else {
         group.classList.remove('active');
+        group.style.display = 'none';
         inputAlamat.required = false;
         inputWaktu.required = false;
+        if (inputTanggal) inputTanggal.required = false;
         inputAlamat.value = '';
         inputWaktu.value = '';
+        if (inputTanggal) inputTanggal.value = '';
+
+        // Sembunyikan informasi ongkir jika tidak perlu jemput
         if (infoOngkir) infoOngkir.style.display = 'none'; // Sembunyikan saat antar ke toko
-        if (labelTanggal) labelTanggal.innerHTML = 'Tanggal Pemesanan <span>*</span>';
+        if (infoToko) infoToko.style.display = 'block'; // Tampilkan info toko
     }
     updatePrice();
 }
@@ -262,7 +271,7 @@ function updateLayananDynamic(selEl) {
         } else if (kategoriPilihan === 'Hat') {
             merkInput.placeholder = 'cth: Adidas';
         } else {
-            merkInput.placeholder = 'cth: Nike Air Force 1';
+            merkInput.placeholder = 'cth: Nike';
         }
     }
 
@@ -403,7 +412,7 @@ function updatePrice() {
                 const jumLabel = row.querySelector('.label-jumlah');
                 if (jumLabel) {
                     if (!hideSize) {
-                        jumLabel.innerHTML = 'Jumlah (Pasang) <span>*</span>';
+                        jumLabel.innerHTML = 'Jumlah <span>*</span>';
                     } else {
                         jumLabel.innerHTML = 'Jumlah Item <span>*</span>';
                     }
@@ -424,7 +433,7 @@ function updatePrice() {
                 totalLayanan += parseInt(etOpt.getAttribute('data-price')) * jml;
             }
         }
-        
+
         if (row) {
             const katSel = row.querySelector('.kat-select');
             const estItemBox = row.querySelector('.est-item-box');
@@ -456,7 +465,7 @@ function updatePrice() {
 
     const warningEl = document.getElementById('priceOngkirWarning');
     if (totalLayanan > 0) {
-        priceEl.textContent = 'Rp ' + totalSemua.toLocaleString('id-ID');
+        if (priceEl) priceEl.textContent = 'Rp ' + totalSemua.toLocaleString('id-ID');
         if (warningEl) {
             if (perluJemput) {
                 if (typeof ongkirDinamis !== 'undefined' && ongkirDinamis === -1) {
@@ -472,10 +481,14 @@ function updatePrice() {
             }
         }
     } else {
-        priceEl.textContent = 'Pilih layanan terlebih dahulu';
+        if (priceEl) priceEl.textContent = 'Pilih layanan terlebih dahulu';
         if (warningEl) {
             warningEl.style.display = 'none';
         }
+    }
+
+    if (typeof updateCheckoutSummary === 'function') {
+        updateCheckoutSummary();
     }
 }
 
@@ -483,6 +496,21 @@ function selectPay(el, val) {
     document.querySelectorAll('.payment-card').forEach(x => x.classList.remove('selected'));
     if (el) el.classList.add('selected');
     document.getElementById('paymentInput').value = val;
+
+    const infoBox = document.getElementById('paymentInfoBox');
+    const infoTitle = document.getElementById('paymentInfoTitle');
+    const infoDesc = document.getElementById('paymentInfoDesc');
+
+    if (infoBox && infoTitle && infoDesc) {
+        infoBox.style.display = 'block';
+        if (val === 'transfer_bca') {
+            infoTitle.textContent = 'Transfer Bank BCA';
+            infoDesc.innerHTML = 'Pembayaran dilakukan melalui transfer ke rekening BCA yang tersedia setelah pesanan dibuat. Bukti transfer wajib diunggah agar pesanan dapat diproses.';
+        } else if (val === 'tunai') {
+            infoTitle.textContent = 'Info Bayar di Tempat (Tunai)';
+            infoDesc.innerHTML = 'Anda memilih bayar tunai. Silakan siapkan uang tunai sejumlah total tagihan pesanan. Pembayaran diserahkan kepada kurir atau admin toko kami.';
+        }
+    }
 }
 
 function previewBukti(input) {
@@ -560,8 +588,8 @@ function saveState() {
     localStorage.setItem('bup_order_state', JSON.stringify(state));
 }
 
-function reviewOrder(isRestoring = false) {
-    if (!isRestoring) {
+function goToStep(step) {
+    if (step === 2) {
         if (!document.getElementById('oNama').value.trim()) return alert('Nama wajib diisi');
         if (!document.getElementById('oWa').value.trim()) return alert('Nomor WA wajib diisi');
 
@@ -582,40 +610,179 @@ function reviewOrder(isRestoring = false) {
             if (!isNoSize && (!uChecks[i] || !uChecks[i].value.trim())) return alert(`Item #${i + 1}: Ukuran sepatu wajib diisi!`);
             if (!wChecks[i] || !wChecks[i].value.trim()) return alert(`Item #${i + 1}: Warna wajib diisi!`);
         }
+    }
 
+    if (step === 3) {
         const mt = document.querySelector('input[name="metode_pengiriman"]:checked');
         if (!mt) return alert('Pilih metode pengiriman');
 
         const alamatGroup = document.getElementById('alamatGroup');
         if (alamatGroup && alamatGroup.classList.contains('active')) {
-            if (!document.getElementById('oAlamat').value.trim()) return alert('Alamat wajib diisi!');
+            if (typeof ongkirDinamis !== 'undefined' && ongkirDinamis === -1) {
+                return alert('Maaf, layanan Antar Jemput Rumah hanya melayani maksimal jarak 25 KM. Silakan ubah metode pengiriman ke "Antar & Ambil di Toko".');
+            }
+            if (!document.getElementById('oAlamat').value.trim()) return alert('Alamat wajib diisi (Pilih/Konfirmasi dari Peta)!');
             if (!document.getElementById('oWaktuJemput').value) return alert('Waktu penjemputan wajib dipilih!');
         }
+    }
 
-        if (!document.getElementById('paymentInput').value) return alert('Pilih metode pembayaran');
+    document.querySelectorAll('[id^="checkout-step-"]').forEach(el => el.style.display = 'none');
+    document.getElementById('checkout-step-' + step).style.display = 'block';
 
+    document.querySelectorAll('.step-item').forEach((el, index) => {
+        el.classList.remove('active', 'done');
+        if (index + 1 < step) el.classList.add('done');
+        else if (index + 1 === step) el.classList.add('active');
+    });
+
+    localStorage.setItem('bup_step', step.toString());
+    if (typeof saveState === 'function') {
         saveState();
     }
 
+    // UPDATE BUTTONS DI STICKY SIDEBAR
+    const btnLanjut = document.getElementById('btnLanjutUtama');
+    const btnKembali = document.getElementById('btnKembaliUtama');
+    if (btnLanjut && btnKembali) {
+        if (step === 1) {
+            btnKembali.style.display = 'flex';
+            btnKembali.onclick = function () { clearOrderState(); window.location.href = '../index.php'; };
+            btnLanjut.style.background = 'var(--blue)';
+            btnLanjut.style.boxShadow = 'none';
+            btnLanjut.innerHTML = 'Lanjut ke Pengiriman';
+            btnLanjut.onclick = function () { goToStep(2); };
+        } else if (step === 2) {
+            btnKembali.style.display = 'flex';
+            btnKembali.onclick = function () { goToStep(1); };
+            btnLanjut.style.background = 'var(--blue)';
+            btnLanjut.style.boxShadow = 'none';
+            btnLanjut.innerHTML = 'Lanjut ke Pembayaran';
+            btnLanjut.onclick = function () { goToStep(3); };
+        } else if (step === 3) {
+            btnKembali.style.display = 'flex';
+            btnKembali.onclick = function () { goToStep(2); };
+            btnLanjut.style.background = 'var(--blue)';
+            btnLanjut.style.boxShadow = 'none';
+            btnLanjut.innerHTML = 'Buat Pesanan';
+            btnLanjut.onclick = function () {
+                const pay = document.getElementById('paymentInput').value;
+                if (!pay) return alert('Silakan pilih metode pembayaran terlebih dahulu!');
+                renderKonfirmasi();
+                goToStep(4);
+            };
+        }
+    }
+
+    const checkoutRight = document.getElementById('checkoutRight');
+    if (checkoutRight) {
+        if (step === 4) {
+            checkoutRight.style.display = 'none';
+        } else {
+            checkoutRight.style.display = 'block';
+        }
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    updateCheckoutSummary();
+}
+
+function handleLanjut() {
+    const step = parseInt(localStorage.getItem('bup_step')) || 1;
+    if (step === 1) goToStep(2);
+    else if (step === 2) goToStep(3);
+    else if (step === 3) {
+        const pay = document.getElementById('paymentInput').value;
+        if (!pay) return alert('Silakan pilih metode pembayaran terlebih dahulu!');
+        renderKonfirmasi();
+        goToStep(4);
+    }
+    else if (step === 4) prosesPesanan();
+}
+
+function handleKembali() {
+    const step = parseInt(localStorage.getItem('bup_step')) || 1;
+    if (step === 1) {
+        clearOrderState();
+        window.location.href = '../index.php';
+    }
+    else if (step === 2) goToStep(1);
+    else if (step === 3) goToStep(2);
+    else if (step === 4) goToStep(3);
+}
+
+function renderKonfirmasi() {
+    const nama = document.getElementById('oNama').value || '-';
+    const wa = document.getElementById('oWa').value || '-';
+
+    document.getElementById('konfNama').textContent = nama;
+    document.getElementById('konfWa').textContent = wa;
+
+    const metodeKirim = document.querySelector('input[name="metode_pengiriman"]:checked');
+    let pengirimanStr = '-';
+    let perluJemput = false;
+    if (metodeKirim) {
+        pengirimanStr = metodeKirim.nextElementSibling ? metodeKirim.nextElementSibling.nextElementSibling.textContent : '-';
+        perluJemput = metodeKirim.getAttribute('data-perlu-jemput') === '1';
+    }
+    document.getElementById('konfPengiriman').textContent = pengirimanStr;
+
+    const konfAlamatGroup = document.getElementById('konfAlamatGroup');
+    if (perluJemput) {
+        konfAlamatGroup.style.display = 'grid';
+        const alamat = document.getElementById('oAlamat').value;
+        const tgl = document.getElementById('oTanggal').value;
+        const wkt = document.getElementById('oWaktuJemput').value;
+        document.getElementById('konfAlamat').innerHTML = `${alamat}<br><div style="color:#64748b; font-size:clamp(0.7rem, 3vw, 0.8rem); margin-top:4px; display:flex; flex-wrap:wrap; column-gap:6px;"><span style="white-space:nowrap;">${tgl}</span><span style="white-space:nowrap;">|</span><span style="white-space:nowrap;">${wkt}</span></div>`;
+    } else {
+        konfAlamatGroup.style.display = 'none';
+    }
+
+    const pay = document.getElementById('paymentInput').value;
+    let payStr = '-';
+    if (pay === 'transfer_bca') payStr = 'Transfer BCA';
+    else if (pay === 'tunai') payStr = 'Tunai (Bayar di tempat)';
+    document.getElementById('konfBayar').textContent = payStr;
+
+    const catatanVal = document.getElementById('oCatatan').value.trim();
+    if (catatanVal) {
+        document.getElementById('konfCatatanGroup').style.display = 'grid';
+        document.getElementById('konfCatatan').textContent = catatanVal;
+    } else {
+        document.getElementById('konfCatatanGroup').style.display = 'none';
+    }
+
+    // Mengambil nilai ringkasan dari sidebar kanan
+    const ringkasanHtml = document.getElementById('daftarLayananSummary').innerHTML;
+    document.getElementById('konfItemsHtml').innerHTML = ringkasanHtml || '<div style="color:#64748b; font-size:0.85rem;">Tidak ada layanan terpilih</div>';
+
+    document.getElementById('konfSubtotal').textContent = document.getElementById('sumSubtotal').textContent;
+
+    // Tampilkan ongkir jika perlu dijemput, jika tidak sembunyikan baris ongkir di konfirmasi
+    if (perluJemput) {
+        document.getElementById('konfOngkirRow').style.display = 'flex';
+        document.getElementById('konfOngkir').textContent = document.getElementById('sumOngkir').textContent;
+    } else {
+        document.getElementById('konfOngkirRow').style.display = 'none';
+    }
+
+    document.getElementById('konfTotal').textContent = document.getElementById('sumTotal').textContent;
+}
+
+function updateCheckoutSummary() {
     const kategoriSelects = document.querySelectorAll('.kat-select');
-    const merkInputs = document.querySelectorAll('.merk-input');
-    const ukuranInputs = document.querySelectorAll('.ukuran-input');
     const layananSelects = document.querySelectorAll('.lay-select');
     const jumlahInputs = document.querySelectorAll('.jum-input');
+    const merkInputs = document.querySelectorAll('.merk-input');
+    const ukuranInputs = document.querySelectorAll('.ukuran-input');
+    const warnaInputs = document.querySelectorAll('.warna-input');
 
     let totalLayanan = 0;
     let daftarLayananHtml = '';
-    let isLongProcess = false;
 
     for (let i = 0; i < kategoriSelects.length; i++) {
-        const katName = kategoriSelects[i].value ? kategoriSelects[i].value.toLowerCase() : '';
         const selIndex = layananSelects[i].selectedIndex;
         const opt = selIndex >= 0 ? layananSelects[i].options[selIndex] : null;
-        const layName = opt ? opt.text.toLowerCase() : '';
 
-        if (katName.includes('repaint') || katName.includes('unyellowing') || layName.includes('repaint') || layName.includes('unyellowing')) {
-            isLongProcess = true;
-        }
         const jml = parseInt(jumlahInputs[i].value) || 1;
         let itemLayananPrice = 0;
         if (opt && opt.getAttribute('data-price')) {
@@ -623,289 +790,119 @@ function reviewOrder(isRestoring = false) {
             totalLayanan += itemLayananPrice;
         }
 
-        let etAddonHtml = '';
         const row = layananSelects[i].closest('.item-row');
+        let etAddonHtml = '';
         const etSel = row ? row.querySelector('.et-select') : null;
         if (etSel && etSel.value && etSel.selectedIndex > 0) {
             const etOpt = etSel.options[etSel.selectedIndex];
-            const etName = etOpt.text.toLowerCase();
-            if (etName.includes('repaint') || etName.includes('unyellowing')) {
-                isLongProcess = true;
-            }
             const etPrice = parseInt(etOpt.getAttribute('data-price')) * jml;
             totalLayanan += etPrice;
             etAddonHtml = `
-                <div style="font-size: clamp(0.75rem, 3vw, 1.15rem); font-weight: 600; color: #475569; margin-top: 4px; display:flex; justify-content:space-between; align-items: flex-start; gap:8px;">
-                    <span style="flex:1; word-break: break-word;">| Extra: ${etOpt.text.split(' (Rp')[0]}</span>
-                    <span style="color:#0f172a; font-weight: 700; flex-shrink: 0; min-width: 80px; text-align: right;">Rp ${etPrice.toLocaleString('id-ID')}</span>
+                <div style="font-size: 0.7rem; color: #64748b; margin-top: 4px; display:flex; justify-content:space-between; align-items:flex-start; gap: 8px;">
+                    <span style="flex:1; word-break: break-word;">+ Extra: ${etOpt.text.split(' (Rp')[0]}</span>
+                    <span style="color:#0f172a; font-weight: 700; font-size: 0.75rem; flex-shrink: 0;">Rp ${etPrice.toLocaleString('id-ID')}</span>
                 </div>
             `;
         }
 
-        const sizeText = ukuranInputs[i] && ukuranInputs[i].value ? `Size ${ukuranInputs[i].value}` : '';
-        const warnaInput = row.querySelector('.warna-input');
-        const warnaText = warnaInput && warnaInput.value ? warnaInput.value : '';
-        const merkText = merkInputs[i].value;
-        const detailsArr = [];
-        if (merkText && merkText !== '-') detailsArr.push(merkText);
-        if (sizeText) detailsArr.push(sizeText);
-        if (warnaText) detailsArr.push(warnaText);
-        const detailStr = detailsArr.join(' | ');
-        const detailHtml = detailStr ? `<div style="font-size: clamp(0.65rem, 3vw, 1rem); color: #64748b; margin-top: 2px; line-height: 1.4;">${detailStr}</div>` : '';
+        if (kategoriSelects[i].value && opt && opt.getAttribute('data-price')) {
+            let merkVal = merkInputs[i] ? merkInputs[i].value.trim() : '';
+            let ukVal = ukuranInputs[i] && ukuranInputs[i].value.trim() !== '' ? ' | Size ' + ukuranInputs[i].value.trim() : '';
+            let wrnVal = warnaInputs[i] && warnaInputs[i].value.trim() !== '' ? ' | ' + warnaInputs[i].value.trim() : '';
+            let detailHtml = '';
+            if (merkVal || wrnVal) {
+                detailHtml = `<div style="font-size: 0.7rem; color: #64748b; margin-top: 2px; word-break: break-word;">${merkVal}${ukVal}${wrnVal}</div>`;
+            }
 
-        daftarLayananHtml += `
-        <div style="margin-bottom:14px;">
-            <div style="display:flex; justify-content:space-between; align-items: flex-start; gap:8px;">
-                <div style="font-size: clamp(0.75rem, 3vw, 1.15rem); font-weight: 700; color: #1e293b; flex:1; padding-right: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${kategoriSelects[i].value} - ${opt.text.split(' (Rp')[0]} <span style="font-weight: 800; color: var(--blue);">(x${jml})</span></div>
-                <div style="font-size: clamp(0.75rem, 3vw, 1.15rem); font-weight: 700; color: #0f172a; text-align:right; white-space:nowrap; flex-shrink:0;">Rp ${itemLayananPrice.toLocaleString('id-ID')}</div>
-            </div>
-            ${detailHtml}
-            ${etAddonHtml}
-        </div>`;
+            daftarLayananHtml += `
+            <div style="margin-bottom:12px; padding-bottom: 12px; border-bottom: 1px dashed #e2e8f0;">
+                <div style="display:flex; justify-content:space-between; align-items: flex-start; gap:8px;">
+                    <div style="flex:1; min-width: 0;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #1e293b; line-height: 1.3; word-break: break-word;">${kategoriSelects[i].value} - ${opt.text.split(' (Rp')[0]} <span style="font-weight: 800; color: var(--blue);">(x${jml})</span></div>
+                        ${detailHtml}
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #0f172a; flex-shrink: 0;">Rp ${itemLayananPrice.toLocaleString('id-ID')}</div>
+                </div>
+                ${etAddonHtml}
+            </div>`;
+        }
+    }
+
+    if (document.getElementById('daftarLayananSummary')) {
+        document.getElementById('daftarLayananSummary').innerHTML = daftarLayananHtml;
+    }
+
+    if (document.getElementById('inlineTotalStep1')) {
+        document.getElementById('inlineTotalStep1').textContent = totalLayanan > 0 ? 'Rp ' + totalLayanan.toLocaleString('id-ID') : 'Pilih layanan terlebih dahulu';
     }
 
     const metodeCek = document.querySelector('input[name="metode_pengiriman"]:checked');
     let biayaKirimSum = 0;
+    let perluJemput = false;
+    let namaMetodeKirim = '-';
     if (metodeCek) {
-        if (metodeCek.getAttribute('data-perlu-jemput') === '1' && typeof ongkirDinamis !== 'undefined') {
+        namaMetodeKirim = metodeCek.nextElementSibling ? metodeCek.nextElementSibling.nextElementSibling.textContent : 'Pengiriman';
+        perluJemput = metodeCek.getAttribute('data-perlu-jemput') === '1';
+        if (perluJemput && typeof ongkirDinamis !== 'undefined') {
             biayaKirimSum = (ongkirDinamis === -1) ? 0 : ongkirDinamis;
         } else {
             biayaKirimSum = parseInt(metodeCek.getAttribute('data-biaya')) || 0;
         }
     }
-    const total = totalLayanan + biayaKirimSum;
 
-    document.getElementById('sumNama').textContent = document.getElementById('oNama').value;
-    document.getElementById('sumItemCount').textContent = kategoriSelects.length;
-    document.getElementById('sumLayananList').innerHTML = daftarLayananHtml;
+    const totalSemua = totalLayanan + biayaKirimSum;
 
-    const estimasiEl = document.getElementById('sumEstimasi');
-    if (estimasiEl) {
-        estimasiEl.textContent = isLongProcess ? '7 - 10 Hari Kerja' : '3 - 5 Hari Kerja';
+    let itemCount = 0;
+    for (let i = 0; i < kategoriSelects.length; i++) {
+        const selIndex = layananSelects[i].selectedIndex;
+        const opt = selIndex >= 0 ? layananSelects[i].options[selIndex] : null;
+        const jml = parseInt(jumlahInputs[i].value) || 1;
+
+        if (kategoriSelects[i].value && opt && opt.getAttribute('data-price')) {
+            itemCount += jml;
+        }
     }
 
-    // Tampilkan ongkos kirim di baris tersendiri
-    const sumOngkirRow = document.getElementById('sumOngkirRow');
-    const sumOngkirValue = document.getElementById('sumOngkirValue');
-    if (sumOngkirRow && sumOngkirValue) {
-        if (metodeCek && metodeCek.getAttribute('data-perlu-jemput') === '1') {
-            if (typeof ongkirDinamis !== 'undefined' && ongkirDinamis === -1) {
-                sumOngkirValue.textContent = 'Diinfokan via WA';
-            } else {
-                sumOngkirValue.textContent = 'Rp ' + biayaKirimSum.toLocaleString('id-ID');
-            }
-            sumOngkirRow.style.display = 'flex';
+    if (document.getElementById('sumItems')) {
+        document.getElementById('sumItems').textContent = itemCount + ' Item';
+    }
+    if (document.getElementById('sumSubtotal')) {
+        document.getElementById('sumSubtotal').textContent = 'Rp ' + totalLayanan.toLocaleString('id-ID');
+    }
+    if (document.getElementById('sumOngkir')) {
+        let textOngkir = 'Rp ' + biayaKirimSum.toLocaleString('id-ID');
+        if (perluJemput && typeof ongkirDinamis !== 'undefined' && ongkirDinamis === -1) {
+            textOngkir = 'Menunggu Info WA';
+        } else if (!metodeCek) {
+            textOngkir = 'Rp 0';
+        }
+        document.getElementById('sumOngkir').textContent = textOngkir;
+    }
+    if (document.getElementById('sumTotal')) {
+        document.getElementById('sumTotal').textContent = 'Rp ' + totalSemua.toLocaleString('id-ID');
+    }
+
+    const rowBiaya = document.getElementById('rowBiayaPengiriman');
+    if (rowBiaya) {
+        if (perluJemput) {
+            rowBiaya.style.display = 'flex';
         } else {
-            // Sembunyikan baris ongkir jika metode tidak butuh jemput/antar
-            sumOngkirRow.style.display = 'none';
+            rowBiaya.style.display = 'none';
         }
     }
-
-    document.getElementById('sumTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
-
-    const pay = document.getElementById('paymentInput').value;
-    const upArea = document.getElementById('uploadArea');
-    const bcaArea = document.getElementById('rekBcaArea');
-    const subtitle = document.getElementById('paySubtitle');
-    const btnKirim = document.getElementById('btnSubmitFinal');
-
-    if (pay === 'tunai') {
-        document.getElementById('sumMetode').textContent = 'Tunai (Bayar Ditempat)';
-        upArea.style.display = 'none';
-        bcaArea.style.display = 'none';
-        subtitle.textContent = 'Pembayaran akan dilakukan secara tunai. Pastikan uang Anda pas.';
-        btnKirim.textContent = 'Konfirmasi Pembayaran';
-        document.getElementById('timerWarning').style.display = 'none';
-        if (timerInterval) clearInterval(timerInterval);
-    } else {
-        document.getElementById('sumMetode').textContent = 'Transfer BCA';
-        upArea.style.display = 'block';
-        bcaArea.style.display = 'block';
-        subtitle.textContent = 'Lakukan pembayaran ke rekening berikut, kemudian upload bukti pembayaran.';
-        btnKirim.textContent = 'Kirim Bukti & Konfirmasi Pembayaran';
-        let deadline = localStorage.getItem('paymentDeadline');
-        if (!deadline) {
-            deadline = new Date().getTime() + (30 * 60 * 1000);
-            localStorage.setItem('paymentDeadline', deadline);
-        }
-        startCountdown(parseInt(deadline));
-    }
-
-    // Tampilkan Modal Konfirmasi
-    const payVal = document.getElementById('paymentInput').value;
-    const payText = (payVal === 'tunai' || payVal === 'cash') ? 'Tunai (Bayar Ditempat)' : 'Transfer BCA';
-    const catatan = document.getElementById('oCatatan').value.trim() || '-';
-
-    const inputDate = document.getElementById('oTanggal').value;
-    let formattedDate = inputDate;
-    if (inputDate) {
-        const d = new Date(inputDate);
-        if (!isNaN(d)) {
-            formattedDate = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-        }
-    } else {
-        const today = new Date();
-        formattedDate = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    }
-    const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
-    let modalHtml = `
-        <div style="margin-bottom:16px; padding:16px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
-                <span style="color:#64748b; font-weight:600; font-size:clamp(0.6rem, 2.5vw, 1rem); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Informasi Pemesan</span>
-                <strong style="color:#0f172a; font-size:clamp(0.75rem, 3vw, 1.2rem); display:block; overflow-wrap: break-word;">${document.getElementById('oNama').value}</strong>
-                <span style="color:#475569; font-size:clamp(0.75rem, 3vw, 1.15rem); display:block; margin-top:2px;">${document.getElementById('oWa').value}</span>
-            </div>
-            <div>
-                <span style="color:#64748b; font-weight:600; font-size:clamp(0.6rem, 2.5vw, 1rem); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Tanggal Pesan</span>
-                <strong style="color:#0f172a; font-size:clamp(0.75rem, 3vw, 1.2rem); display:block; overflow-wrap: break-word;">${formattedDate}, ${currentTime}</strong>
-            </div>
-        </div>
-    `;
-
-    const metodeEl = document.querySelector('input[name="metode_pengiriman"]:checked');
-    const namaMetode = metodeEl ? metodeEl.nextElementSibling.textContent : '-';
-    
-    modalHtml += `
-        <div style="margin-bottom:16px; padding:16px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="${metodeEl && metodeEl.getAttribute('data-perlu-jemput') === '1' ? 'margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:12px;' : ''}">
-                <span style="color:#64748b; font-weight:600; font-size:clamp(0.6rem, 2.5vw, 1rem); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Metode Pengiriman</span>
-                <strong style="color:#0f172a; font-size:clamp(0.75rem, 3vw, 1.2rem); display:block; overflow-wrap: break-word;">${namaMetode}</strong>
-            </div>
-    `;
-
-    if (metodeEl && metodeEl.getAttribute('data-perlu-jemput') === '1') {
-        let tglJemput = document.getElementById('oTanggal').value;
-        if (tglJemput) {
-            const parts = tglJemput.split('-');
-            if (parts.length === 3) tglJemput = `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
-        let wktGabung = tglJemput ? (tglJemput + ' | ' + document.getElementById('oWaktuJemput').value) : document.getElementById('oWaktuJemput').value;
-        modalHtml += `
-            <div style="margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
-                <span style="color:#64748b; font-weight:600; font-size:clamp(0.6rem, 2.5vw, 1rem); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Jadwal Jemput</span>
-                <strong style="color:#0f172a; font-size:clamp(0.75rem, 3vw, 1.2rem); display:block; overflow-wrap: break-word;">${wktGabung}</strong>
-            </div>
-            <div>
-                <span style="color:#64748b; font-weight:600; font-size:clamp(0.6rem, 2.5vw, 1rem); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Alamat Lengkap</span>
-                <strong style="color:#0f172a; font-size:clamp(0.75rem, 3vw, 1.2rem); display:block; line-height:1.4; overflow-wrap: break-word;">${document.getElementById('oAlamat').value}</strong>
-            </div>
-        `;
-    }
-
-    modalHtml += `</div>`; // Tutup grup pengiriman
-
-    modalHtml += `
-        <div style="margin-bottom:16px; padding:16px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="${catatan && catatan !== '-' ? 'margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:12px;' : ''}">
-                <span style="color:#64748b; font-weight:600; font-size:clamp(0.6rem, 2.5vw, 1rem); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Metode Pembayaran</span>
-                <strong style="color:#0f172a; font-size:clamp(0.75rem, 3vw, 1.2rem); display:block; overflow-wrap: break-word;">${payText}</strong>
-            </div>
-            ${(catatan && catatan !== '-') ? `
-            <div>
-                <span style="color:#64748b; font-weight:600; font-size:clamp(0.6rem, 2.5vw, 1rem); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Catatan Tambahan</span>
-                <strong style="color:#0f172a; font-size:clamp(0.75rem, 3vw, 1.15rem); display:block; font-style:italic; line-height:1.4; overflow-wrap: break-word;">${catatan}</strong>
-            </div>` : ''}
-        </div>
-    `;
-
-    modalHtml += `
-        <div style="padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
-            <div style="margin-bottom:12px;">
-                <span style="color:#64748b; font-weight:600; font-size:clamp(0.6rem, 2.5vw, 1rem); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Rincian Pesanan:</span>
-                <div style="padding-left:14px; border-left:3px solid var(--blue); font-size:clamp(0.75rem, 3vw, 1.15rem); overflow-wrap: break-word;">${daftarLayananHtml}</div>
-            </div>
-            ${(metodeEl && metodeEl.getAttribute('data-perlu-jemput') === '1') ? `
-            <div style="margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="color:#64748b; font-weight:500; font-size:clamp(0.7rem, 3vw, 1.1rem);">Ongkos Kirim</span>
-                <strong style="color:#0f172a; font-size:clamp(0.75rem, 3vw, 1.15rem);">${(typeof ongkirDinamis !== 'undefined' && ongkirDinamis === -1) ? 'Diinfokan via WA' : (biayaKirimSum > 0 ? 'Rp ' + biayaKirimSum.toLocaleString('id-ID') : 'Rp 0')}</strong>
-            </div>` : ''}
-            <div style="margin-top:12px; text-align:right;">
-                <span style="color:#64748b; font-weight:600; font-size:clamp(0.6rem, 2.5vw, 1rem); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Total Tagihan</span>
-                <strong style="color:var(--blue); font-size:clamp(1.2rem, 5vw, 2.2rem); display:block; line-height: 1; letter-spacing:-0.5px;">Rp ${total.toLocaleString('id-ID')}</strong>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('modalSumContent').innerHTML = modalHtml;
-    document.getElementById('modalKonfirmasi').style.display = 'flex';
-}
-
-function tutupModalKonfirmasi() {
-    document.getElementById('modalKonfirmasi').style.display = 'none';
-}
-
-function lanjutKePembayaran() {
-    document.getElementById('modalKonfirmasi').style.display = 'none';
-
-    localStorage.setItem('bup_step', '2');
-    isPaymentStep = true;
-
-    document.getElementById('btnBackHome').style.display = 'none';
-    document.getElementById('step1').style.display = 'none';
-    document.getElementById('step2').style.display = 'block';
-    window.scrollTo(0, 0);
-}
-
-function kembaliKeForm() {
-    const konfirmasi = confirm("Apakah Anda yakin ingin kembali ke halaman form?");
-    if (!konfirmasi) {
-        return;
-    }
-
-    localStorage.removeItem('paymentDeadline');
-    if (timerInterval) clearInterval(timerInterval);
-
-    clearOrderState();
-    isPaymentStep = false;
-
-    // Reset form fields
-    document.getElementById('orderForm').reset();
-    document.getElementById('dynamicItemsContainer').innerHTML = '';
-    tambahItem(); // Tambah 1 item default
-    document.getElementById('oAlamat').value = '';
-    document.getElementById('oWaktuJemput').value = '';
-    document.querySelectorAll('.shipping-card').forEach(c => c.classList.remove('selected'));
-    document.getElementById('alamatGroup').classList.remove('active');
-
-    // Reset peta
-    if (typeof map !== 'undefined' && map && typeof directionsRenderer !== 'undefined' && directionsRenderer) {
-        directionsRenderer.setDirections({ routes: [] });
-    }
-    const infoOngkir = document.getElementById('infoOngkirBox');
-    if (infoOngkir) infoOngkir.style.display = 'none';
-    const infoText = document.getElementById('maps_info_text');
-    if (infoText) {
-        infoText.innerHTML = `
-            <span style="display: flex; align-items: center; gap: 6px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                <em>Geser pin pada peta untuk menentukan lokasi, atau ketik manual pada kolom alamat di bawah.</em>
-            </span>
-        `;
-    }
-
-    updatePrice();
-
-    document.getElementById('step2').style.display = 'none';
-    document.getElementById('btnBackHome').style.display = 'inline-flex';
-    document.getElementById('step1').style.display = 'block';
 }
 
 async function prosesPesanan() {
     const pay = document.getElementById('paymentInput').value;
-    const fileInput = document.getElementById('oBukti');
-
-    if (pay !== 'tunai') {
-        if (fileInput.files.length === 0) return alert('Harap upload foto bukti transfer terlebih dahulu!');
-        if (fileInput.files[0].size > 5 * 1024 * 1024) return alert('Ukuran foto terlalu besar! Maksimal 5MB.');
-    }
+    if (!pay) return alert('Silakan pilih metode pembayaran terlebih dahulu!');
 
     const form = document.getElementById('orderForm');
-    const btn = document.getElementById('btnSubmitFinal');
+    const btn = document.getElementById('btnKonfirmasiAkhir') || document.getElementById('btnLanjutUtama');
 
-    btn.disabled = true;
-    const textLama = btn.textContent;
-    btn.textContent = 'Mengirim Data...';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+    }
 
     document.querySelectorAll('.lay-select').forEach(sel => sel.disabled = false);
 
@@ -918,50 +915,38 @@ async function prosesPesanan() {
         try {
             data = JSON.parse(text);
         } catch (e) {
-            console.error("Backend Error Response:", text);
-            btn.disabled = false;
-            btn.textContent = textLama;
-            return alert("Gagal memproses pesanan ke server. Cek log console.");
+            alert('Terjadi kesalahan format response dari server.');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Konfirmasi Pesanan';
+            }
+            return;
         }
 
         if (data.success) {
             clearOrderState();
             isPaymentStep = false;
-            isPaymentStep = false;
-
-            document.getElementById('btnBackHome').style.display = 'none';
-            document.getElementById('step1').style.display = 'none';
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('mainOrderCard').style.display = 'none';
-            document.getElementById('step3').style.display = 'none';
-
-            window.history.replaceState(null, '', '?success=' + data.kode_pesanan);
-
-            const resStatus = await fetch(`../api/order.php?action=status&kode=${data.kode_pesanan}&_t=${new Date().getTime()}`, { cache: 'no-store' });
-            const statusJson = await resStatus.json();
-            if (statusJson.success && statusJson.data) {
-                siapkanStruk(statusJson.data);
-            }
-            document.getElementById('step3').style.display = 'block';
-            window.scrollTo(0, 0);
-
+            window.location.href = `customer/my-orders.php?new_order=1`;
         } else {
-            alert(data.message || 'Terjadi kesalahan sistem di database');
-            btn.disabled = false;
-            btn.textContent = textLama;
+            alert(data.message || 'Gagal menyimpan pesanan.');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Konfirmasi Pesanan';
+            }
         }
     } catch (e) {
-        console.error(e);
-        btn.disabled = false;
-        btn.textContent = textLama;
-        alert("Terjadi kesalahan jaringan.");
+        alert('Terjadi kesalahan jaringan.');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Konfirmasi Pesanan';
+        }
     }
 }
 
 // === Google Maps API Logic ===
 let ongkirDinamis = 0;
-const STORE_LAT = -6.199487902393529;
-const STORE_LNG = 106.9400659797928;
+const STORE_LAT = -6.199423905832486;
+const STORE_LNG = 106.94010889513326;
 let map;
 let draggableMarker;
 let mapsApiReady = false;  // Flag: API sudah dimuat
@@ -983,7 +968,7 @@ function initGoogleMaps() {
 // Buat map hanya saat container sudah visible (lazy init)
 function createMap() {
     if (mapCreated || !mapsApiReady) return;
-    mapCreated = true;
+    // JANGAN set mapCreated = true di sini dulu — set setelah map benar-benar dibuat
 
     const oAlamat = document.getElementById('oAlamat');
     const searchAlamat = document.getElementById('searchAlamat');
@@ -997,15 +982,15 @@ function createMap() {
     const oLngInput = document.getElementById('oLng');
 
     // Coba ambil dari sessionStorage dulu
-    const sessionLat = sessionStorage.getItem('bupp_order_lat');
-    const sessionLng = sessionStorage.getItem('bupp_order_lng');
+    const sessionLat = sessionStorage.getItem('bup_lat');
+    const sessionLng = sessionStorage.getItem('bup_lng');
 
     if (sessionLat && sessionLng && !isNaN(parseFloat(sessionLat)) && !isNaN(parseFloat(sessionLng))) {
         initLat = parseFloat(sessionLat);
         initLng = parseFloat(sessionLng);
         hasSavedLocation = true;
     } else if (oLatInput && oLngInput && oLatInput.value && oLngInput.value &&
-               !isNaN(parseFloat(oLatInput.value)) && !isNaN(parseFloat(oLngInput.value))) {
+        !isNaN(parseFloat(oLatInput.value)) && !isNaN(parseFloat(oLngInput.value))) {
         initLat = parseFloat(oLatInput.value);
         initLng = parseFloat(oLngInput.value);
         hasSavedLocation = true;
@@ -1013,8 +998,20 @@ function createMap() {
     const mapEl = document.getElementById('map');
     if (!mapEl) return;
 
-    // Pastikan container terlihat sebelum init (cegah 0x0 size)
-    requestAnimationFrame(() => {
+    // Tunggu 200ms agar browser selesai render container (cegah 0x0 size)
+    // requestAnimationFrame tidak cukup karena layout belum final saat baru display:block
+    setTimeout(() => {
+        // Cek ulang apakah container benar-benar visible & punya ukuran
+        if (mapEl.offsetWidth === 0 || mapEl.offsetHeight === 0) {
+            // Container masih 0x0, retry setelah 300ms lagi
+            setTimeout(() => {
+                if (!mapCreated) createMap();
+            }, 300);
+            return;
+        }
+
+        mapCreated = true; // Set di sini — setelah kita yakin container sudah punya ukuran
+
         map = new google.maps.Map(mapEl, {
             center: { lat: initLat, lng: initLng },
             zoom: 13,
@@ -1031,6 +1028,10 @@ function createMap() {
             title: 'Geser pin ini ke lokasi Anda',
             animation: google.maps.Animation.DROP
         });
+
+        // Force resize setelah map dibuat untuk pastikan tile terload penuh
+        google.maps.event.trigger(map, 'resize');
+        map.setCenter({ lat: initLat, lng: initLng });
 
         // Reverse geocode saat marker digeser atau peta diklik
         function updateLocationFromLatLng(newPos) {
@@ -1064,20 +1065,20 @@ function createMap() {
         if (!hasSavedLocation && typeof autoGetLocation === 'function') {
             autoGetLocation();
         }
-    });
+    }, 200);
 }
 
 function setupMapControls(oAlamat, searchAlamat) {
     // Tombol Konfirmasi Lokasi
     const btnKonfirmasi = document.getElementById('btnKonfirmasiLokasi');
     if (btnKonfirmasi) {
-        btnKonfirmasi.addEventListener('click', function() {
+        btnKonfirmasi.addEventListener('click', function () {
             if (searchAlamat && searchAlamat.value.trim() !== '') {
                 oAlamat.value = searchAlamat.value;
                 if (draggableMarker) {
                     const pos = draggableMarker.getPosition();
-                    sessionStorage.setItem('bupp_order_lat', pos.lat());
-                    sessionStorage.setItem('bupp_order_lng', pos.lng());
+                    sessionStorage.setItem('bup_lat', pos.lat());
+                    sessionStorage.setItem('bup_lng', pos.lng());
                 }
                 oAlamat.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 oAlamat.style.transition = 'box-shadow 0.3s ease';
@@ -1089,151 +1090,200 @@ function setupMapControls(oAlamat, searchAlamat) {
         });
     }
 
-    // ── Custom Search + Rekomendasi Google Autocomplete ──
+    // ── Smart Autocomplete: Google Places (primary) + Nominatim (auto-fallback) ──
     if (searchAlamat) {
         const suggestBox = document.getElementById('searchSuggestBox');
-        let debounceTimer;
-        let autocompleteService = null;
+        let googlePlacesWorking = null; // null=belum tahu, true=jalan, false=tidak jalan
+        let fallbackDebounce;
+        let googleAutocomplete = null;
 
-        // Load places library sekali saja, lalu simpan instance
-        async function getAutocompleteService() {
-            if (autocompleteService) return autocompleteService;
-            await google.maps.importLibrary('places');
-            autocompleteService = new google.maps.places.AutocompleteService();
-            return autocompleteService;
-        }
-
-        async function geocodeAndMove(query) {
-            if (!query || query.trim().length < 3) return;
-            const geocoder = new google.maps.Geocoder();
+        // ── Nominatim Fallback (Jabodetabek) ──
+        async function fetchNominatim(query) {
             try {
-                const result = await geocoder.geocode(
-                    { address: query + ', Indonesia', componentRestrictions: { country: 'ID' } }
+                const viewbox = '106.60,-5.90,107.20,-6.50';
+                const base = `format=json&addressdetails=1&namedetails=1&limit=7&countrycodes=id&accept-language=id&dedupe=1`;
+                let res = await fetch(
+                    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&${base}&viewbox=${viewbox}&bounded=1`,
+                    { headers: { 'Accept-Language': 'id' } }
                 );
-                if (result.results && result.results[0]) {
-                    const loc = result.results[0].geometry.location;
-                    searchAlamat.value = result.results[0].formatted_address;
-                    moveMapAndPin(loc, result.results[0].geometry.viewport);
-                    const lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
-                    const lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
-                    hitungJarak({ lat, lng });
+                let data = await res.json();
+                if (!data.length) {
+                    res = await fetch(
+                        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ' Jakarta')}&${base}`,
+                        { headers: { 'Accept-Language': 'id' } }
+                    );
+                    data = await res.json();
                 }
-            } catch (e) {
-                console.warn('Geocode failed:', e);
-            }
+                return data.map(item => {
+                    const parts = item.display_name.split(', ');
+                    const mainText = item.namedetails?.name || parts[0];
+                    const secText = parts.slice(1, 5).filter(p => p && p !== 'Indonesia').join(', ');
+                    return { mainText, secText, lat: parseFloat(item.lat), lng: parseFloat(item.lon) };
+                });
+            } catch { return []; }
         }
 
-        function moveMapAndPin(loc, viewport) {
-            const lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
-            const lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
-            if (map) {
-                if (viewport) {
-                    map.fitBounds(viewport);
-                    google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
-                        if (map.getZoom() > 17) map.setZoom(17);
-                        if (map.getZoom() < 14) map.setZoom(15);
-                    });
-                } else {
-                    map.panTo({ lat, lng });
-                    map.setZoom(16);
-                }
-            }
-            if (draggableMarker) {
-                draggableMarker.setPosition({ lat, lng });
-                draggableMarker.setAnimation(google.maps.Animation.BOUNCE);
-                setTimeout(() => draggableMarker.setAnimation(null), 700);
-            }
-        }
-
-        function showSuggestions(predictions) {
-            if (!suggestBox) return;
-            if (!predictions || predictions.length === 0) { hideSuggestions(); return; }
+        function showCustomSuggestions(results) {
+            if (!suggestBox || !results.length) { hideCustomSuggestions(); return; }
             suggestBox.innerHTML = '';
-            predictions.forEach((pred) => {
-                const mainText = pred.structured_formatting?.main_text || pred.description;
-                const secText  = pred.structured_formatting?.secondary_text || '';
-
+            results.forEach(r => {
                 const item = document.createElement('div');
                 item.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background 0.15s;font-family:inherit;';
                 item.innerHTML = `
                     <svg style="flex-shrink:0;margin-top:2px;color:#ef4444;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                     <div>
-                        <div style="font-size:0.875rem;font-weight:600;color:#0f172a;line-height:1.3;">${mainText}</div>
-                        <div style="font-size:0.75rem;color:#64748b;margin-top:2px;line-height:1.3;">${secText}</div>
+                        <div style="font-size:0.875rem;font-weight:600;color:#0f172a;line-height:1.3;">${r.mainText}</div>
+                        <div style="font-size:0.75rem;color:#64748b;margin-top:2px;line-height:1.3;">${r.secText}</div>
                     </div>`;
                 item.addEventListener('mouseenter', () => item.style.background = '#f0f9ff');
                 item.addEventListener('mouseleave', () => item.style.background = '');
-                item.addEventListener('mousedown', async (e) => {
+                item.addEventListener('mousedown', e => {
                     e.preventDefault();
-                    hideSuggestions();
-                    searchAlamat.value = mainText;
+                    hideCustomSuggestions();
+                    searchAlamat.value = r.mainText;
+                    moveMapAndPin({ lat: r.lat, lng: r.lng }, null);
+                    hitungJarak({ lat: r.lat, lng: r.lng });
                     const infoText = document.getElementById('maps_info_text');
-                    if (infoText) infoText.innerHTML = '<span style="color:#3b82f6;font-size:0.85rem;">⏳ Memuat lokasi...</span>';
-                    // Gunakan Google Geocoder untuk resolve koordinat (lebih stabil dari PlacesService)
-                    await geocodeAndMove(pred.description || mainText + (secText ? ', ' + secText : ''));
+                    if (infoText) infoText.innerHTML = `<span style="color:#10b981;font-size:0.85rem;">📍 Lokasi ditemukan. Geser pin merah untuk perjelas, lalu klik Konfirmasi.</span>`;
+                    if (oAlamat && !oAlamat.value) { oAlamat.value = r.mainText + (r.secText ? ', ' + r.secText : ''); updateCheckoutSummary(); }
                 });
                 suggestBox.appendChild(item);
             });
             suggestBox.style.display = 'block';
         }
 
-        function hideSuggestions() {
+        function hideCustomSuggestions() {
             if (suggestBox) suggestBox.style.display = 'none';
         }
 
-        searchAlamat.addEventListener('input', function() {
-            clearTimeout(debounceTimer);
-            const val = this.value.trim();
-            if (val.length < 3) { hideSuggestions(); return; }
-            debounceTimer = setTimeout(async () => {
-                try {
-                    const svc = await getAutocompleteService();
-                    svc.getPlacePredictions(
-                        {
-                            input: val,
-                            componentRestrictions: { country: 'id' },
-                            location: new google.maps.LatLng(STORE_LAT, STORE_LNG),
-                            radius: 50000,
-                            language: 'id'
-                        },
-                        function(predictions, status) {
-                            if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-                                showSuggestions(predictions.slice(0, 6));
-                            } else {
-                                hideSuggestions();
+        // ── Google Places Autocomplete Widget ──
+        try {
+            googleAutocomplete = new google.maps.places.Autocomplete(searchAlamat, {
+                componentRestrictions: { country: 'id' },
+                fields: ['geometry', 'formatted_address', 'name'],
+                bounds: new google.maps.LatLngBounds(
+                    new google.maps.LatLng(STORE_LAT - 0.5, STORE_LNG - 0.5),
+                    new google.maps.LatLng(STORE_LAT + 0.5, STORE_LNG + 0.5)
+                ),
+                strictBounds: false
+            });
+
+            googleAutocomplete.addListener('place_changed', function () {
+                googlePlacesWorking = true; // konfirmasi Google Places berjalan
+                hideCustomSuggestions();
+                clearTimeout(fallbackDebounce);
+
+                const place = googleAutocomplete.getPlace();
+                const infoText = document.getElementById('maps_info_text');
+
+                if (!place || !place.geometry || !place.geometry.location) {
+                    // Tekan Enter tanpa pilih → geocode manual
+                    const val = searchAlamat.value.trim();
+                    if (val.length >= 3) {
+                        if (infoText) infoText.innerHTML = '<span style="color:#3b82f6;font-size:0.85rem;">⏳ Mencari lokasi...</span>';
+                        new google.maps.Geocoder().geocode(
+                            { address: val + ', Indonesia', componentRestrictions: { country: 'ID' } },
+                            (results, status) => {
+                                if (status === 'OK' && results[0]) {
+                                    const loc = results[0].geometry.location;
+                                    moveMapAndPin(loc, results[0].geometry.viewport);
+                                    hitungJarak({ lat: loc.lat(), lng: loc.lng() });
+                                    if (infoText) infoText.innerHTML = `<span style="color:#10b981;font-size:0.85rem;">📍 Lokasi ditemukan. Geser pin merah untuk perjelas, lalu klik Konfirmasi.</span>`;
+                                    if (oAlamat && !oAlamat.value) { oAlamat.value = results[0].formatted_address; updateCheckoutSummary(); }
+                                } else {
+                                    if (infoText) infoText.innerHTML = '<span style="color:#ef4444;font-size:0.85rem;">❌ Alamat tidak ditemukan. Coba ketik lebih spesifik.</span>';
+                                }
                             }
-                        }
-                    );
-                } catch (err) {
-                    console.warn('Google Autocomplete failed:', err);
-                    hideSuggestions();
+                        );
+                    }
+                    return;
                 }
-            }, 300);
+
+                // Pilih dari dropdown Google — langsung dapat geometry
+                const loc = place.geometry.location;
+                moveMapAndPin(loc, place.geometry.viewport || null);
+                hitungJarak({ lat: loc.lat(), lng: loc.lng() });
+                if (infoText) infoText.innerHTML = `<span style="color:#10b981;font-size:0.85rem;">📍 Lokasi ditemukan. Geser pin merah untuk perjelas, lalu klik Konfirmasi.</span>`;
+                if (oAlamat && !oAlamat.value) { oAlamat.value = place.formatted_address || searchAlamat.value; updateCheckoutSummary(); }
+            });
+
+            if (map) googleAutocomplete.bindTo('bounds', map);
+        } catch(e) {
+            console.warn('Google Places Autocomplete init failed:', e);
+            googlePlacesWorking = false;
+        }
+
+        // ── Deteksi otomatis: jika Google Places tidak muncul → pakai Nominatim ──
+        searchAlamat.addEventListener('input', function () {
+            clearTimeout(fallbackDebounce);
+            const val = this.value.trim();
+            if (val.length < 3) { hideCustomSuggestions(); return; }
+
+            fallbackDebounce = setTimeout(async () => {
+                // Cek apakah .pac-container Google sudah tampil dengan item
+                const pac = document.querySelector('.pac-container');
+                const googleIsShowing = pac && pac.offsetHeight > 0 && pac.children.length > 0;
+
+                if (googleIsShowing) {
+                    googlePlacesWorking = true; // Google Places aktif!
+                    hideCustomSuggestions();
+                    return;
+                }
+
+                // Jika sebelumnya Google Places terbukti jalan, mungkin query ini sekedar lambat 
+                // atau memang tidak ada hasil di Google. Kita tetap coba ambil dari Nominatim.
+                if (googlePlacesWorking === null) googlePlacesWorking = false;
+
+                // Ambil dari Nominatim
+                const results = await fetchNominatim(val);
+                
+                // Cek sekali lagi: jangan-jangan Google baru saja muncul saat fetch berjalan
+                const pacCheck2 = document.querySelector('.pac-container');
+                if (pacCheck2 && pacCheck2.offsetHeight > 0 && pacCheck2.children.length > 0) {
+                    googlePlacesWorking = true;
+                    hideCustomSuggestions();
+                    return;
+                }
+
+                showCustomSuggestions(results);
+            }, 800); // tunggu 800ms agar Google Places punya cukup waktu
         });
 
-        searchAlamat.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                clearTimeout(debounceTimer);
-                hideSuggestions();
-                const val = this.value.trim();
-                if (val.length >= 3) geocodeAndMove(val);
-            }
-            if (e.key === 'Escape') hideSuggestions();
+        // Tutup custom suggest saat klik di luar
+        document.addEventListener('click', e => {
+            if (e.target !== searchAlamat && !suggestBox?.contains(e.target)) hideCustomSuggestions();
         });
 
-        document.addEventListener('click', function(e) {
-            if (e.target !== searchAlamat && !suggestBox?.contains(e.target)) hideSuggestions();
-        });
-
-        searchAlamat.addEventListener('focus', function() {
-            if (this.value.trim().length >= 3 && suggestBox?.children.length > 0) {
-                suggestBox.style.display = 'block';
-            }
+        // Cegah form submit saat Enter
+        searchAlamat.addEventListener('keydown', e => {
+            if (e.key === 'Enter') e.preventDefault();
+            if (e.key === 'Escape') hideCustomSuggestions();
         });
     }
 }
 
+
+function moveMapAndPin(loc, viewport) {
+    const lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
+    const lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
+    if (map) {
+        if (viewport) {
+            map.fitBounds(viewport);
+            google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
+                if (map.getZoom() > 17) map.setZoom(17);
+                if (map.getZoom() < 14) map.setZoom(15);
+            });
+        } else {
+            map.panTo({ lat, lng });
+            map.setZoom(16);
+        }
+    }
+    if (draggableMarker) {
+        draggableMarker.setPosition({ lat, lng });
+        draggableMarker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(() => draggableMarker.setAnimation(null), 700);
+    }
+}
 
 function hitungJarak(destinationLocation) {
     // Normalisasi: terima object {lat, lng} atau google.maps.LatLng
@@ -1247,8 +1297,8 @@ function hitungJarak(destinationLocation) {
         oLatInput.value = lat2;
         oLngInput.value = lng2;
     }
-    sessionStorage.setItem('bupp_order_lat', lat2);
-    sessionStorage.setItem('bupp_order_lng', lng2);
+    sessionStorage.setItem('bup_lat', lat2);
+    sessionStorage.setItem('bup_lng', lng2);
 
     const lat1 = STORE_LAT;
     const lng1 = STORE_LNG;
@@ -1298,11 +1348,13 @@ function hitungJarak(destinationLocation) {
         if (infoText) {
             if (ongkirDinamis === -1) {
                 if (mapEl) mapEl.style.display = 'none';
-                if (btnKonfirmasi) btnKonfirmasi.style.display = 'flex';
+                if (btnKonfirmasi) btnKonfirmasi.style.display = 'none';
                 if (searchAlamatInput && searchAlamatInput.parentElement) searchAlamatInput.parentElement.style.display = 'block';
                 infoText.innerHTML = `
-                    <div style="color: #0f172a; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #cbd5e1; text-align: center; font-size:clamp(0.8rem, 3vw, 0.95rem); line-height: 1.5;">
-                        Mohon maaf, lokasi Anda melampaui batas maksimal (Maks. 25 KM). Namun jangan khawatir, pesanan Anda <b>tetap dapat kami proses</b>.<br><br>Silakan lanjutkan pemesanan, dan tim kami akan menghubungi Anda melalui <b>WhatsApp</b> untuk penyesuaian biaya kirim.
+                    <div style="color: #991b1b; background: #fef2f2; padding: 16px; border-radius: 8px; border: 1px solid #fecaca; text-align: center; font-size:clamp(0.8rem, 3vw, 0.95rem); line-height: 1.5;">
+                        <b>Jarak Terlalu Jauh (${distanceText})</b><br><br>
+                        Mohon maaf, layanan antar-jemput hanya tersedia untuk jarak maksimal 25 KM dari toko kami.<br><br>
+                        Silakan <b>ganti Metode Pengiriman</b> di atas menjadi <b>"Antar & Ambil di Toko"</b> untuk melanjutkan pesanan.
                     </div>
                 `;
             } else {
@@ -1339,7 +1391,7 @@ function autoGetLocation() {
                 </div>
             `;
         }
-        
+
         const searchBox = document.getElementById('searchAlamat');
         if (searchBox) searchBox.value = "⏳ Sedang mencari lokasi GPS Anda...";
 
@@ -1723,9 +1775,14 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        if (localStorage.getItem('bup_step') === '2') {
-            reviewOrder(true);
-            lanjutKePembayaran();
+        if (localStorage.getItem('bup_step')) {
+            const savedStep = parseInt(localStorage.getItem('bup_step')) || 1;
+            if (savedStep > 1 && savedStep <= 4) {
+                goToStep(savedStep);
+                if (savedStep === 4) {
+                    renderKonfirmasi();
+                }
+            }
         }
 
         updatePrice();

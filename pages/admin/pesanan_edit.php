@@ -621,7 +621,6 @@ $metode_pengiriman_db = $db->query("SELECT * FROM metode_pengiriman ORDER BY id 
                         <label class="form-label">Status Pengerjaan Awal <span>*</span></label>
                         <select name="status_pesanan" class="form-control" required>
                             <option value="diterima">Diterima</option>
-                            <option value="diproses">Langsung Diproses</option>
                         </select>
                     </div>
                 </div>

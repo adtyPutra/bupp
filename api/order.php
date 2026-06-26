@@ -20,16 +20,16 @@ if (!function_exists('jsonResponse')) {
 
 if (!function_exists('generateKodePesanan')) {
     function generateKodePesanan() {
-        // Hanya menggunakan huruf dan angka, tanpa karakter ambigu seperti O dan 0 jika memungkinkan
-        // Namun untuk kesederhanaan, kita gunakan A-Z dan 0-9 standar
+        $today = date('ymd'); // Contoh: 260606
+        
         $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $randomString = '';
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < 3; $i++) {
             $randomString .= $characters[rand(0, strlen($characters) - 1)];
         }
         
-        // Format menjadi: BUP-XXXXXX
-        return 'BUP-' . $randomString;
+        // Output: BUP-260606-A7X
+        return 'BUP-' . $today . '-' . $randomString;
     }
 }
 
@@ -191,14 +191,11 @@ try {
         $db->beginTransaction();
 
         try {
-            $stmtPelanggan = $db->prepare("SELECT id FROM pelanggan WHERE no_wa = ?");
-            $stmtPelanggan->execute([$no_wa]);
-            $pelanggan = $stmtPelanggan->fetch();
-
-            if ($pelanggan) {
-                $pelanggan_id = $pelanggan['id'];
-                // Hanya update alamat jika ada nilai baru — jangan hapus alamat lama
-                // (mencegah data alamat hilang saat customer memesan dengan Ambil di Toko)
+            require_once __DIR__ . '/../includes/customer_auth.php';
+            $loggedInCustomer = getLoggedInCustomer();
+            
+            if ($loggedInCustomer) {
+                $pelanggan_id = $loggedInCustomer['id'];
                 if (!empty($alamat)) {
                     $db->prepare("UPDATE pelanggan SET nama = ?, alamat = ? WHERE id = ?")
                        ->execute([$nama, $alamat, $pelanggan_id]);
@@ -207,9 +204,24 @@ try {
                        ->execute([$nama, $pelanggan_id]);
                 }
             } else {
-                $db->prepare("INSERT INTO pelanggan (nama, no_wa, alamat) VALUES (?, ?, ?)")
-                   ->execute([$nama, $no_wa, $alamat ?: null]);
-                $pelanggan_id = $db->lastInsertId();
+                $stmtPelanggan = $db->prepare("SELECT id FROM pelanggan WHERE no_wa = ?");
+                $stmtPelanggan->execute([$no_wa]);
+                $pelanggan = $stmtPelanggan->fetch();
+
+                if ($pelanggan) {
+                    $pelanggan_id = $pelanggan['id'];
+                    if (!empty($alamat)) {
+                        $db->prepare("UPDATE pelanggan SET nama = ?, alamat = ? WHERE id = ?")
+                           ->execute([$nama, $alamat, $pelanggan_id]);
+                    } else {
+                        $db->prepare("UPDATE pelanggan SET nama = ? WHERE id = ?")
+                           ->execute([$nama, $pelanggan_id]);
+                    }
+                } else {
+                    $db->prepare("INSERT INTO pelanggan (nama, no_wa, alamat) VALUES (?, ?, ?)")
+                       ->execute([$nama, $no_wa, $alamat ?: null]);
+                    $pelanggan_id = $db->lastInsertId();
+                }
             }
 
             // Insert Pesanan Utama dengan tambahan waktu_penjemputan dan ongkir

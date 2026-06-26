@@ -293,6 +293,7 @@ unset($o);
                             <?php
                                 // Tunai: 1 tombol langsung "Tandai Lunas" (biru)
                                 // Transfer: tombol "Konfirmasi Transfer" (hijau)
+                                $show_konfirmasi = true;
                                 if ($is_tunai) {
                                     $btn_class   = "btn-lunasi";
                                     $btn_text    = "Tandai Lunas";
@@ -301,9 +302,13 @@ unset($o);
                                     $btn_class   = "btn-konfirmasi";
                                     $btn_text    = "Konfirmasi";
                                     $pesan_modal = "Konfirmasi Bukti Pembayaran Selesai";
+                                    if (empty($o['bukti_bayar'])) {
+                                        $show_konfirmasi = false;
+                                    }
                                 }
                             ?>
 
+                            <?php if($show_konfirmasi): ?>
                             <button type="button" class="btn-action <?= $btn_class ?>"
                             data-id="<?= $o['id'] ?>"
                             data-kode="<?= htmlspecialchars($o['kode_pesanan']) ?>"
@@ -316,6 +321,9 @@ unset($o);
                             onclick="bukaModalKonfirmasi(this)">
                             <?= $btn_text ?>
                             </button>
+                            <?php else: ?>
+                            <span style="color: #f59e0b; font-weight: 800; font-size: 0.75rem; display: flex; align-items: center; height: 34px; letter-spacing: 0.5px; text-align: center;">MENUNGGU BUKTI</span>
+                            <?php endif; ?>
 
                             <template id="detail-<?= $o['id'] ?>">
                                 <?= $o['detail_layanan'] ?: '<span style="color:#ef4444; font-size: 0.85rem;">Tidak ada item tercatat</span>' ?>
@@ -327,9 +335,9 @@ unset($o);
                         <?php endif; ?>
                         
                         <div style="margin: 0;">
-                            <?php if (!$is_tunai && $o['status_pesanan'] !== 'batal' && $is_pending): ?>
+                            <?php if ($o['status_pesanan'] !== 'batal' && $is_pending): ?>
                                 <button type="button" class="btn-action btn-hapus" onclick="bukaModalBatal('<?= $o['id'] ?>', '<?= htmlspecialchars($o['kode_pesanan']) ?>', '<?= htmlspecialchars($o['nama_pelanggan']) ?>', '<?= strtoupper($metode_bersih) ?>', 'Rp <?= number_format($o['total_harga'], 0, ',', '.') ?>')">Batal</button>
-                            <?php else: ?>
+                            <?php elseif ($o['status_pesanan'] === 'batal'): ?>
                                 <form action="" method="POST" style="margin: 0;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pembayaran ini?')">
                                     <input type="hidden" name="action" value="hapus">
                                     <input type="hidden" name="id_pesanan" value="<?= $o['id'] ?>">

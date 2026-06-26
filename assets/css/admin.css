@@ -401,8 +401,8 @@ textarea.form-control-readonly { display: block; resize: none; font-family: inhe
 .btn-lunasi { background: #3b82f6; color: #fff; box-shadow: 0 2px 4px rgba(59,130,246,0.2); }
 .btn-lunasi:hover { background: #2563eb; transform: translateY(-1px); }
 
-.btn-hapus { background: #fff; color: #ef4444; border: 1px solid #fca5a5; }
-.btn-hapus:hover { background: #fee2e2; }
+.btn-hapus { background: #ef4444; color: #fff; border: 1px solid #ef4444; }
+.btn-hapus:hover { background: #dc2626; border-color: #dc2626; }
 
 /* --- Modals --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); padding: 20px; }

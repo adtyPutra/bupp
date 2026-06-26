@@ -302,8 +302,7 @@ for ($m = 1; $m <= 12; $m++) {
                 <?php
                   $st = strtolower($o['status_pesanan']);
                   $badge = 'bg-diterima';
-                  if($st=='diproses') { $badge='bg-diproses'; }
-                  elseif($st=='finishing') { $badge='bg-finishing'; }
+                  if($st=='finishing') { $badge='bg-finishing'; }
                   elseif($st=='siap_diambil') { $badge='bg-finishing'; }
                   elseif($st=='diantar_kurir') { $badge='bg-finishing'; }
                   elseif($st=='selesai') { $badge='bg-selesai'; }

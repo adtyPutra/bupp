@@ -8,7 +8,6 @@ const ICONS = {
 
     // Ikon Timeline
     diterima: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M9 14l2 2 4-4"></path></svg>`,
-    diproses: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>`,
     dicuci: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1.5 11.5A2 2 0 0 1 16.5 22h-9A2 2 0 0 1 5.5 20.5L4 9z"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/><circle cx="12" cy="14" r="2"/><circle cx="9" cy="16" r="1.5"/><circle cx="15" cy="16" r="1.5"/></svg>`,
     dikeringkan: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>`,
     finishing: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>`,
@@ -20,7 +19,6 @@ const ICONS = {
 // Global default TAHAPAN for reference (now dynamically built in checkStatus)
 const DEFAULT_TAHAPAN = [
     { k: 'diterima', l: 'Diterima', icon: 'diterima', d: 'Pesanan masuk dan menunggu konfirmasi pembayaran admin.' },
-    { k: 'diproses', l: 'Diproses', icon: 'diproses', d: 'Pesanan sedang dalam tahap pemeriksaan dan persiapan sebelum proses pencucian dilakukan.' },
     { k: 'dicuci', l: 'Dicuci', icon: 'dicuci', d: 'Pesanan sedang dalam proses pencucian.' },
     { k: 'dikeringkan', l: 'Dikeringkan', icon: 'dikeringkan', d: 'Pesanan sedang dalam proses pengeringan.' },
     { k: 'finishing', l: 'Finishing', icon: 'finishing', d: 'Pesanan sedang dalam tahap pengecekan akhir dan persiapan pengemasan.' }
@@ -381,30 +379,7 @@ async function checkStatus() {
             }
         }
 
-        let timelineHtml = ``;
-        if (isWaitingPayment) {
-            timelineHtml = `
-                <div class="timeline-sec" style="text-align:center; padding: 40px 20px;">
-                    <div style="color: #f59e0b; margin-bottom: 16px; display: flex; justify-content: center; width: 100%;">
-                        <div class="anim-clock" style="display: inline-block;">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        </div>
-                    </div>
-                    <h3 style="font-size: clamp(1.1rem, 4.5vw, 1.25rem); font-weight: 800; color: #1e293b; margin-bottom: 8px;">Menunggu Verifikasi Pembayaran</h3>
-                    <p style="color: #64748b; font-size: clamp(0.8rem, 3.5vw, 0.95rem); line-height: 1.6; max-width: 400px; margin: 0 auto; padding: 0 10px;">Status pengerjaan pesanan Anda akan mulai ditampilkan di sini setelah pembayaran dikonfirmasi oleh admin.</p>
-                </div>
-            `;
-        } else {
-            timelineHtml = `
-                <div class="timeline-sec">
-                    <div class="timeline-wrap">
-                        ${stepsHtml}
-                    </div>
-                </div>
-            `;
-        }
-
-        let btnCetakHtml = '';
+        let finalTimelineHtml = '';
         if (o.status_pesanan === 'batal') {
             const alasanHtml = o.catatan_pembatalan ? `
                 <div style="background: #fff; padding: 16px; border-radius: 8px; margin: 0 auto 20px auto; max-width: 500px; text-align: left; border-left: 4px solid #ef4444; border: 1px solid #fecaca; box-shadow: 0 2px 4px rgba(239,68,68,0.1);">
@@ -413,7 +388,7 @@ async function checkStatus() {
                 </div>
             ` : '';
 
-            timelineHtml = `
+            finalTimelineHtml = `
                 <div class="timeline-sec" style="border-top:1px solid var(--border-color);">
                     <div style="background:#fef2f2; border: 1.5px solid #fca5a5; border-radius:16px; padding: clamp(16px, 4vw, 24px); text-align:center;">
                         <div style="display:inline-flex; justify-content:center; align-items:center; width:56px; height:56px; background:#fee2e2; border-radius:50%; margin-bottom:14px;">
@@ -424,8 +399,8 @@ async function checkStatus() {
                         </div>
                         <h4 style="margin:0 0 8px 0; color:#991b1b; font-size: clamp(1rem, 4.5vw, 1.25rem); font-weight:800; line-height: 1.4;">PESANAN DIBATALKAN</h4>
                        <p style="margin:0 0 18px 0; color:#7f1d1d; font-size: clamp(0.8rem, 3.5vw, 0.9rem); line-height: 1.6;">
-    Mohon maaf, pesanan Anda dengan kode <strong>${o.kode_pesanan}</strong> tidak dapat diproses. Silakan hubungi admin melalui WhatsApp untuk informasi lebih lanjut atau pemesanan ulang.
-</p>
+                            Mohon maaf, pesanan Anda dengan kode <strong>${o.kode_pesanan}</strong> tidak dapat diproses. Silakan hubungi admin melalui WhatsApp untuk informasi lebih lanjut atau pemesanan ulang.
+                        </p>
                         ${alasanHtml}
                         <a href="https://wa.me/6281211811577?text=Halo%20BUP,%20saya%20ingin%20bertanya%20mengenai%20pesanan%20saya%20yang%20dibatalkan%20dengan%20kode%20${o.kode_pesanan}" target="_blank" style="display:inline-flex; align-items:center; gap:8px; background:#ef4444; color:#fff; padding:12px 24px; border-radius:10px; font-weight:700; font-size: clamp(0.85rem, 3.5vw, 0.95rem); text-decoration:none; box-shadow:0 4px 12px rgba(239,68,68,0.2); transition:all 0.2s;">
                             💬 Hubungi WhatsApp
@@ -434,18 +409,13 @@ async function checkStatus() {
                 </div>
             `;
         } else {
-            // Tombol cetak HANYA muncul jika pembayaran sudah dikonfirmasi (LUNAS)
-            const isLunas = (o.status_bayar === 'confirmed' || o.status_bayar === 'lunas');
-            if (isLunas) {
-                btnCetakHtml = `
-                <div style="text-align: center; margin-top: 16px; padding-top: 24px; border-top: 1px dashed var(--border-color);">
-                    <button class="btn-print" onclick="window.print()">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                        Cetak Bukti Pembayaran
-                    </button>
+            finalTimelineHtml = `
+                <div class="timeline-sec" style="margin-top: 16px;">
+                    <div class="timeline-wrap">
+                        ${stepsHtml}
+                    </div>
                 </div>
-                `;
-            }
+            `;
         }
 
         resCard.innerHTML = `
@@ -477,7 +447,7 @@ async function checkStatus() {
                         <div class="il-icon grad-orange">${ICONS.cal_grad}</div>
                         <div class="il-text">
                           <div class="il-label">Tanggal Order</div>
-                          <div class="il-val">${(o.tanggal_pesan || o.tanggal) ? new Date(o.tanggal_pesan || o.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}</div>
+                          <div class="il-val">${o.created_at ? new Date(o.created_at.replace(' ', 'T')).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}</div>
                         </div>
                     </div>
                     <div class="il-item">
@@ -488,7 +458,6 @@ async function checkStatus() {
                         </div>
                     </div>
                 </div>
-                ${btnCetakHtml}
             </div>
 
             <div class="order-items-sec">
@@ -498,7 +467,7 @@ async function checkStatus() {
                 </div>
             </div>
 
-            ${timelineHtml}
+            ${finalTimelineHtml}
         `;
 
     } catch (e) {
@@ -523,6 +492,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+async function handleUploadBukti(e, kode) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitBukti');
+    const form = document.getElementById('formUploadBukti');
+    
+    btn.disabled = true;
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah...';
+
+    try {
+        const formData = new FormData(form);
+        formData.append('kode_pesanan', kode);
+
+        const res = await fetch('../api/upload_bukti.php', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (data.success) {
+            alert('Bukti pembayaran berhasil diunggah!');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Terjadi kesalahan saat mengunggah.');
+            btn.disabled = false;
+            btn.innerHTML = oldHtml;
+        }
+    } catch(err) {
+        alert('Terjadi kesalahan jaringan.');
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+    }
+}
 
 
 

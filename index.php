@@ -2,20 +2,28 @@
 // ============================================================
 // index.php — Halaman Utama BUP
 // ============================================================
-
-// Panggil file database saja. Pastikan path ini sesuai dengan lokasi file koneksimu
+require_once __DIR__ . '/config/app.php';
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/customer_auth.php';
 
-// Ambil koneksi database
+if (isCustomerLoggedIn()) {
+    header('Location: ' . BASE_URL . '/pages/customer/home.php');
+    exit;
+}
+
 $db = db();
 
-// Set manual array $setting sebagai pengganti tabel pengaturan yang tidak ada
+
 $setting = [
     'nama_usaha' => 'BUP',
     'no_wa'      => '6281211811577'
 ];
 
-$wa_num = preg_replace('/[^0-9]/', '', $setting['no_wa']);
+$wa_num       = preg_replace('/[^0-9]/', '', $setting['no_wa']);
+$customer     = getLoggedInCustomer();
+$isLoggedIn   = isCustomerLoggedIn();
+$namaInisial  = $isLoggedIn ? strtoupper(substr($customer['nama'], 0, 2)) : '';
+$namaDepan    = $isLoggedIn ? htmlspecialchars(explode(' ', $customer['nama'])[0]) : '';
 ?>
 
 <!DOCTYPE html>
@@ -29,6 +37,7 @@ $wa_num = preg_replace('/[^0-9]/', '', $setting['no_wa']);
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/main.css?v=<?= time(); ?>">
+<link rel="stylesheet" href="assets/css/customer.css?v=<?= time(); ?>">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
@@ -41,15 +50,50 @@ $wa_num = preg_replace('/[^0-9]/', '', $setting['no_wa']);
       <img src="assets/img/logo_bup.png" alt="Logo Build Up Play">
     </a>
     <div class="nav-links" id="navLinks">
-      <a href="#home">Beranda</a>
-      <a href="#about">Tentang</a>
-      <a href="#services">Layanan</a>
-      <a href="#gallery">Galeri</a>
-      <a href="#contact">Kontak</a>
-      <a href="pages/status.php">Status Pesanan</a>
+      <?php if ($isLoggedIn): ?>
+        <a href="#services">Layanan</a>
+        <a href="pages/customer/my-orders.php">Riwayat Pesanan</a>
+      <?php else: ?>
+        <a href="#about">Tentang</a>
+        <a href="#services">Layanan</a>
+        <a href="#gallery">Galeri</a>
+        <a href="#contact">Kontak</a>
+        <a href="pages/status.php">Status Pesanan</a>
+      <?php endif; ?>
     </div>
     <div class="nav-right">
-      <a href="pages/order.php" class="btn btn-dark">Pesan Sekarang</a>
+      <?php if ($isLoggedIn): ?>
+        <div class="nav-dropdown-wrap" id="userDropWrap">
+          <button class="nav-user-btn" onclick="toggleUserDrop()">
+            <span class="avatar"><?= $namaInisial ?></span>
+            <span><?= $namaDepan ?></span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="nav-dropdown" id="userDropdown">
+            <div class="nav-dropdown-user">
+              <div class="dd-name"><?= htmlspecialchars($customer['nama']) ?></div>
+              <div class="dd-email">@<?= htmlspecialchars($customer['username']) ?></div>
+            </div>
+
+            <a href="pages/customer/my-orders.php">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Riwayat Pesanan
+            </a>
+            <a href="pages/customer/profile.php">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Profil Saya
+            </a>
+            <div class="dd-divider"></div>
+            <button class="dd-logout" onclick="window.location.href='api/customer_auth.php?action=logout'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+              Logout
+            </button>
+          </div>
+        </div>
+      <?php else: ?>
+        <a href="pages/login.php" class="btn btn-outline" style="border: 1px solid #1f2937; color: #1f2937; font-weight: 600; padding: 8px 18px; border-radius: 50px; text-decoration: none;">Login</a>
+        <a href="pages/login.php?mode=register" class="btn btn-dark" style="padding: 8px 18px; border-radius: 50px; background-color: #1f2937; color: white; border: none; font-weight: 600; text-decoration: none;">Daftar</a>
+      <?php endif; ?>
     </div>
     <div class="hamburger" id="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
   </div>
@@ -57,13 +101,23 @@ $wa_num = preg_replace('/[^0-9]/', '', $setting['no_wa']);
 
 <div class="mob-menu" id="mobMenu">
   <span class="mob-close" onclick="toggleMenu()">✕</span>
-  <a href="#home" onclick="toggleMenu()">Beranda</a>
-  <a href="#about" onclick="toggleMenu()">Tentang</a>
-  <a href="#services" onclick="toggleMenu()">Layanan</a>
-  <a href="#gallery" onclick="toggleMenu()">Galeri</a>
-  <a href="#contact" onclick="toggleMenu()">Kontak</a>
-  <a href="pages/status.php">Status Pesanan</a>
-  <a href="pages/order.php" class="btn btn-dark" style="margin-top:14px;justify-content:center">Pesan Sekarang</a>
+  <?php if ($isLoggedIn): ?>
+    <a href="pages/customer/home.php" onclick="toggleMenu()">Beranda</a>
+    <a href="#services" onclick="toggleMenu()">Layanan</a>
+    <a href="pages/customer/my-orders.php" onclick="toggleMenu()">Riwayat Pesanan</a>
+    <a href="pages/customer/profile.php" onclick="toggleMenu()">Profil Saya</a>
+    <a href="api/customer_auth.php?action=logout" style="color:#ef4444;">Logout</a>
+    <a href="pages/order.php" class="btn btn-dark" style="margin-top:14px;justify-content:center">Pesan Sekarang</a>
+  <?php else: ?>
+    <a href="#home" onclick="toggleMenu()">Beranda</a>
+    <a href="#about" onclick="toggleMenu()">Tentang</a>
+    <a href="#services" onclick="toggleMenu()">Layanan</a>
+    <a href="#gallery" onclick="toggleMenu()">Galeri</a>
+    <a href="#contact" onclick="toggleMenu()">Kontak</a>
+    <a href="pages/status.php" onclick="toggleMenu()">Status Pesanan</a>
+    <a href="pages/login.php" class="btn btn-outline" style="margin-top:14px;justify-content:center; border: 1px solid #1f2937; color: #1f2937; border-radius: 50px;">Login</a>
+    <a href="pages/login.php?mode=register" class="btn btn-dark" style="margin-top:8px;justify-content:center; border-radius: 50px;">Daftar</a>
+  <?php endif; ?>
 </div>
 
 <section class="hero" id="home">
@@ -77,7 +131,7 @@ $wa_num = preg_replace('/[^0-9]/', '', $setting['no_wa']);
         <p class="hero-sub">Buat sepatu kamu kembali bersih, segar, dan seperti baru. Perawatan profesional untuk setiap jenis sepatu dari sneakers hingga formal shoes.</p>
         
         <div class="hero-actions">
-          <a href="pages/order.php" class="btn btn-dark">Pesan Sekarang</a>
+          <a href="pages/login.php" class="btn btn-dark">Pesan Sekarang</a>
           <a href="pages/status.php" class="btn btn-outline">Cek Status</a>
         </div>
       </div>
@@ -178,58 +232,49 @@ $wa_num = preg_replace('/[^0-9]/', '', $setting['no_wa']);
 </section>
 <section class="services" id="services">
   <div class="container">
-    <div class="svc-header fade-up">
-      <h2 class="sec-title">Layanan Kami</h2>
-      <p class="sec-sub">Perawatan sepatu profesional dengan hasil maksimal dan pengerjaan cepat.</p>
+    <div class="gal-top fade-up" style="margin-bottom: 24px;">
+      <div>
+        <h2 class="sec-title">Layanan Kami</h2>
+        <p class="sec-sub">Perawatan sepatu profesional dengan hasil maksimal dan pengerjaan cepat.</p>
+      </div>
+      <div class="gal-btns">
+        <button class="gal-btn" onclick="document.getElementById('svcScroll').scrollBy({left: -300, behavior: 'smooth'})"><i class="fas fa-chevron-left"></i></button>
+        <button class="gal-btn" onclick="document.getElementById('svcScroll').scrollBy({left: 300, behavior: 'smooth'})"><i class="fas fa-chevron-right"></i></button>
+      </div>
     </div>
 
     <div class="svc-grid">
   <?php
-  $svc_display = [
-    [
-      'name' => 'Sneakers Cleaning', 
-      'desc' => 'Pembersihan menyeluruh untuk sneakers kesayanganmu. Kami hilangkan noda membandel agar sepatu kembali bersih, wangi, dan nyaman dipakai beraktivitas.', 
-      'grad' => 'linear-gradient(135deg, #ffffff, #f0f0f0)' 
-    ],
-    [
-      'name' => 'Boots Cleaning', 
-      'desc' => 'Perawatan ekstra untuk sepatu boots. Membersihkan kotoran berat sekaligus menjaga ketahanan material agar boots kamu tetap tangguh di segala medan.', 
-      'grad' => 'linear-gradient(135deg, #ffffff, #f0f0f0)' 
-    ],
-    [
-      'name' => 'Leather Care', 
-      'desc' => 'Treatment khusus material kulit. Kami bersihkan dan berikan pelembap khusus agar sepatu kulitmu lentur, mengkilap, dan terhindar dari retak.', 
-      'grad' => 'linear-gradient(135deg, #ffffff, #f0f0f0)' 
-    ],
-    [
-      'name' => 'Unyellowing', 
-      'desc' => 'Solusi ampuh untuk sol sepatu yang menguning. Proses pemutihan khusus untuk mengembalikan warna asli sol agar terlihat seperti baru dibeli.', 
-      'grad' => 'linear-gradient(135deg, #ffffff, #f0f0f0)' 
-    ],
-    [
-      'name' => 'Repaint Service', 
-      'desc' => 'Warna sepatu pudar atau kusam? Layanan cat ulang kami siap mengembalikan kecerahan warna aslinya atau ubah warna custom sesuai gayamu.', 
-      'grad' => 'linear-gradient(135deg, #ffffff, #f0f0f0)'
-    ],
-    [
-      'name' => 'Pick Up & Delivery', 
-      'desc' => 'Tidak perlu repot keluar rumah. Kurir kami siap menjemput sepatu kotormu dan mengantarkannya kembali dalam keadaan bersih dan rapi.', 
-      'grad' => 'linear-gradient(135deg, #ffffff, #f0f0f0)'
-    ],
-  ];
-  
-  foreach ($svc_display as $s): ?>
-    <div class="svc-card fade-up">
-      <div class="svc-card-inner" style="background: <?= $s['grad']; ?>;">
-        
-        <h3 class="svc-name"><?= htmlspecialchars($s['name']); ?></h3>
-        <p class="svc-desc"><?= htmlspecialchars($s['desc']); ?></p>
-        
-        <a href="pages/order.php" class="svc-link">Pesan Sekarang</a>
-        
+  require_once __DIR__ . '/includes/service_helper.php';
+  $stmt = $db->query("SELECT * FROM layanan WHERE aktif = 1 ORDER BY kategori ASC, harga ASC");
+  $layananList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  ?>
+  <style>
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+  <div id="svcScroll" class="hide-scrollbar" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 20px; padding-bottom: 24px; scroll-behavior: smooth;">
+    <?php foreach ($layananList as $s): 
+        $details = getDeskripsi($s['jenis'], $s['kategori']);
+    ?>
+      <div class="card fade-up" style="flex: 0 0 280px; scroll-snap-align: start;">
+        <div class="card-img" style="background-image: url('<?= $details['img']; ?>');">
+        </div>
+        <div class="card-body">
+          <div class="card-cat"><?= htmlspecialchars(strtoupper($s['kategori'])); ?></div>
+          <h4 class="card-title"><?= htmlspecialchars($s['jenis']); ?></h4>
+          <p class="card-desc"><?= htmlspecialchars($details['desc']); ?></p>
+          <div class="card-footer">
+              <?php if ($isLoggedIn): ?>
+                  <a href="pages/order.php?layanan_id=<?= $s['id'] ?>" class="card-btn">Pesan Sekarang</a>
+              <?php else: ?>
+                  <a href="pages/login.php" class="card-btn">Pesan Sekarang</a>
+              <?php endif; ?>
+          </div>
+        </div>
       </div>
-    </div>
-  <?php endforeach; ?>
+    <?php endforeach; ?>
+  </div>
     </div>
   </div>
 </section>
@@ -362,7 +407,7 @@ $wa_num = preg_replace('/[^0-9]/', '', $setting['no_wa']);
     <h2>Siap Membuat Sepatu Kamu Seperti Baru?</h2>
     <p>Pesan sekarang dan rasakan layanan cuci sepatu berkualitas cepat, aman, dan profesional</p>
     <div class="actions">
-      <a href="pages/order.php" class="btn btn-blue">Pesan Sekarang</a>
+      <a href="pages/login.php" class="btn btn-blue">Pesan Sekarang</a>
       <a href="pages/status.php" class="btn" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2)">Cek Status Pesanan</a>
     </div>
   </div>
@@ -432,5 +477,22 @@ $wa_num = preg_replace('/[^0-9]/', '', $setting['no_wa']);
 
 <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 <script src="assets/js/main.js"></script>
+<script>
+function toggleUserDrop() {
+    const wrap = document.getElementById('userDropWrap');
+    const dd   = document.getElementById('userDropdown');
+    if (!wrap) return;
+    wrap.classList.toggle('open');
+    dd.classList.toggle('show');
+}
+document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('userDropWrap');
+    if (wrap && !wrap.contains(e.target)) {
+        wrap.classList.remove('open');
+        const dd = document.getElementById('userDropdown');
+        if (dd) dd.classList.remove('show');
+    }
+});
+</script>
 </body>
 </html>

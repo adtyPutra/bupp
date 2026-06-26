@@ -10,10 +10,13 @@ $q  = trim($_GET['q'] ?? '');
 
 // Helper: Format tanggal ke bahasa Indonesia
 function tglIndo($tgl) {
+    if (empty($tgl) || strpos($tgl, '0000-00-00') === 0) return '-';
     $bulan = ['Jan'=>'Jan','Feb'=>'Feb','Mar'=>'Mar','Apr'=>'Apr','May'=>'Mei',
               'Jun'=>'Jun','Jul'=>'Jul','Aug'=>'Agu','Sep'=>'Sep','Oct'=>'Okt',
               'Nov'=>'Nov','Dec'=>'Des'];
-    $ts = strtotime($tgl); $eng = date('M', $ts);
+    $ts = strtotime($tgl);
+    if (!$ts) return '-';
+    $eng = date('M', $ts);
     return str_replace($eng, $bulan[$eng] ?? $eng, date('d M Y', $ts));
 }
 
